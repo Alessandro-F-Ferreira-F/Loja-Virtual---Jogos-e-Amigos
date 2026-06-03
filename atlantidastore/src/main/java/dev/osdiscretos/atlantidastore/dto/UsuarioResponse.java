@@ -11,6 +11,10 @@ public record UsuarioResponse (
     LocalDateTime dataCriacao
 ) { 
     public static UsuarioResponse from(Usuario usuario) {
-        return new UsuarioResponse(usuario.getId(), usuario.getNome(), usuario.getEmail(), usuario.getDataCriacao());
+        return new UsuarioResponse(
+            usuario.getId(), 
+            usuario.getNome(), 
+            usuario.getEmail(), 
+            usuario.getDataCriacao());
     }    
 }

@@ -20,6 +20,10 @@ body {
     gap: 18px;
 }
 
+.container.narrow {
+    width: min(460px, calc(100% - 32px));
+}
+
 .panel {
     background: #ffffff;
     border: 1px solid #d7dde5;
@@ -55,11 +59,22 @@ h2 {
     color: #66788a;
 }
 
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
 .form {
     display: grid;
     grid-template-columns: 1fr 1fr auto;
     gap: 14px;
     align-items: end;
+}
+
+.form.single {
+    grid-template-columns: 1fr;
 }
 
 label {
@@ -94,15 +109,34 @@ button {
     cursor: pointer;
 }
 
+a {
+    color: #236f4e;
+    font-weight: 700;
+}
+
+a.button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 42px;
+    border-radius: 6px;
+    padding: 0 16px;
+    background: #236f4e;
+    color: #ffffff;
+    text-decoration: none;
+}
+
 button:hover {
     background: #1f5f44;
 }
 
-button.secondary {
+button.secondary,
+a.button.secondary {
     background: #243b53;
 }
 
-button.secondary:hover {
+button.secondary:hover,
+a.button.secondary:hover {
     background: #172a3a;
 }
 
@@ -123,6 +157,11 @@ button.danger:hover {
 
 .mensagem.erro {
     color: #b42318;
+}
+
+.footer-link {
+    margin-top: 16px;
+    color: #66788a;
 }
 
 .table-wrap {
@@ -175,7 +214,12 @@ td.acoes button {
         display: grid;
     }
 
+    .actions {
+        justify-content: stretch;
+    }
+
     .header button,
+    .header .button,
     .form button {
         width: 100%;
     }

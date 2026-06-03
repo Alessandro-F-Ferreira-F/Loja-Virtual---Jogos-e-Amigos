@@ -1,7 +1,7 @@
 package dev.osdiscretos.atlantidastore.controller;
 
 
-import dev.osdiscretos.atlantidastore.dto.CadastrarUsuarioRequestDTO;
+import dev.osdiscretos.atlantidastore.dto.CadastroRequestDTO;
 import dev.osdiscretos.atlantidastore.dto.ErroResponse;
 import dev.osdiscretos.atlantidastore.dto.UsuarioResponse;
 import dev.osdiscretos.atlantidastore.service.UsuarioService;
@@ -24,10 +24,8 @@ public class UsuarioController {
 
     // Endpoint de cadastro de usuário
     @PostMapping
-    public ResponseEntity<UsuarioResponse> cadastrar(
-        @RequestBody CadastrarUsuarioRequestDTO request
-    ) {
-        UsuarioResponse usuarioCriado = usuarioService.cadastrar(request);
+    public ResponseEntity<UsuarioResponse> register(@RequestBody CadastroRequestDTO request) {
+        UsuarioResponse usuarioCriado = usuarioService.register(request);
 
         return ResponseEntity
             .status(HttpStatus.CREATED)
@@ -36,19 +34,18 @@ public class UsuarioController {
 
     // Endpoint de listagem de usuários
     @GetMapping
-    public ResponseEntity<List<UsuarioResponse>> listar() {
-        List<UsuarioResponse> usuarios = usuarioService.listar();
-
-        return ResponseEntity.ok(usuarios);
+    public ResponseEntity<List<UsuarioResponse>> listUsers() {
+        return ResponseEntity.ok(usuarioService.listAll());
     }
 
     // Endpoint de remoção de usuário
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> remover(@PathVariable UUID id) {
-        usuarioService.remover(id);
-
+    public ResponseEntity<Void> remove(@PathVariable UUID id) {
+        usuarioService.remove(id);
         return ResponseEntity.noContent().build();
     }
+
+    // Exceptions...
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErroResponse> tratarRequisicaoInvalida(IllegalArgumentException exception) {

@@ -1,10 +1,8 @@
-const form = document.getElementById("usuarioForm");
-const nomeInput = document.getElementById("nome");
-const emailInput = document.getElementById("email");
+const usuarioLogado = document.getElementById("usuarioLogado");
 const mensagem = document.getElementById("mensagem");
 const tabela = document.getElementById("usuariosTabela");
-const atualizarButton = document.getElementById("atualizarButton");
 const imprimirButton = document.getElementById("imprimirButton");
+const logoutButton = document.getElementById("logoutButton");
 
 function mostrarMensagem(texto, erro = false) {
     mensagem.textContent = texto;
@@ -49,8 +47,29 @@ function renderizarUsuarios(usuarios) {
     `).join("");
 }
 
+async function carregarSessao() {
+    const resposta = await fetch("/api/auth/me");
+
+    if (resposta.status === 401) {
+        window.location.href = "/login";
+        return;
+    }
+
+    if (!resposta.ok) {
+        throw new Error("Não foi possível carregar a sessão.");
+    }
+
+    const usuario = await resposta.json();
+    usuarioLogado.textContent = `Logado como ${usuario.nome} (${usuario.email})`;
+}
+
 async function carregarUsuarios() {
     const resposta = await fetch("/api/usuarios");
+
+    if (resposta.status === 401) {
+        window.location.href = "/login";
+        return;
+    }
 
     if (!resposta.ok) {
         throw new Error("Não foi possível carregar os usuários.");
@@ -60,36 +79,15 @@ async function carregarUsuarios() {
     renderizarUsuarios(usuarios);
 }
 
-async function cadastrarUsuario(event) {
-    event.preventDefault();
-
-    const usuario = {
-        nome: nomeInput.value,
-        email: emailInput.value
-    };
-
-    const resposta = await fetch("/api/usuarios", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(usuario)
-    });
-
-    if (!resposta.ok) {
-        const erro = await resposta.json();
-        throw new Error(erro.mensagem || "Não foi possível cadastrar o usuário.");
-    }
-
-    form.reset();
-    mostrarMensagem("Usuário cadastrado com sucesso.");
-    await carregarUsuarios();
-}
-
 async function removerUsuario(id) {
     const resposta = await fetch(`/api/usuarios/${id}`, {
         method: "DELETE"
     });
+
+    if (resposta.status === 401) {
+        window.location.href = "/login";
+        return;
+    }
 
     if (!resposta.ok) {
         const erro = await resposta.json();
@@ -100,25 +98,16 @@ async function removerUsuario(id) {
     await carregarUsuarios();
 }
 
-form.addEventListener("submit", async (event) => {
-    try {
-        await cadastrarUsuario(event);
-    } catch (error) {
-        mostrarMensagem(error.message, true);
-    }
-});
-
-atualizarButton.addEventListener("click", async () => {
-    try {
-        await carregarUsuarios();
-        mostrarMensagem("Lista atualizada.");
-    } catch (error) {
-        mostrarMensagem(error.message, true);
-    }
-});
-
 imprimirButton.addEventListener("click", () => {
     window.print();
+});
+
+logoutButton.addEventListener("click", async () => {
+    await fetch("/api/auth/logout", {
+        method: "POST"
+    });
+
+    window.location.href = "/login";
 });
 
 tabela.addEventListener("click", async (event) => {
@@ -133,6 +122,7 @@ tabela.addEventListener("click", async (event) => {
     }
 });
 
-carregarUsuarios().catch((error) => {
-    mostrarMensagem(error.message, true);
-});
+Promise.all([
+    carregarSessao(),
+    carregarUsuarios()
+]).catch((error) => mostrarMensagem(error.message, true));
