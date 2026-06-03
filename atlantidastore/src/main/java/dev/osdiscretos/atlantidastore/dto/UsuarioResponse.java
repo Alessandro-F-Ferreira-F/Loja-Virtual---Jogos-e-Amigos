@@ -8,9 +8,18 @@ public record UsuarioResponse (
     UUID id,
     String nome,
     String email,
-    LocalDateTime dataCriacao
+    LocalDateTime dataCriacao,
+    boolean perfilPublico,
+    boolean jogosAdquiridosPublicos
 ) { 
     public static UsuarioResponse from(Usuario usuario) {
-        return new UsuarioResponse(usuario.getId(), usuario.getNome(), usuario.getEmail(), usuario.getDataCriacao());
+        return new UsuarioResponse(
+            usuario.getId(), 
+            usuario.getNome(), 
+            usuario.getEmail(), 
+            usuario.getDataCriacao(),
+            usuario.isPerfilPublico(),
+            usuario.isJogosAdquiridosPublicos()
+        );
     }    
 }
