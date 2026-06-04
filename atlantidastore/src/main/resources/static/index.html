@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Usuários</title>
+    <title>Catálogo</title>
     <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
@@ -11,17 +11,92 @@
         <section class="panel">
             <div class="header">
                 <div>
-                    <h1>Usuários cadastrados</h1>
+                    <h1>Catálogo da plataforma</h1>
                     <p id="usuarioLogado">Carregando sessão...</p>
                 </div>
                 <div class="actions">
-                    <a class="button secondary" href="/cadastro">Cadastrar</a>
                     <button class="secondary" id="imprimirButton" type="button">Imprimir</button>
                     <button class="danger" id="logoutButton" type="button">Sair</button>
                 </div>
             </div>
 
             <p id="mensagem" class="mensagem" role="status"></p>
+        </section>
+
+        <section class="panel no-print">
+            <div class="header">
+                <div>
+                    <h2>Publicar jogo</h2>
+                    <p>O jogo será registrado na biblioteca central.</p>
+                </div>
+            </div>
+
+            <form id="jogoForm" class="form game-form">
+                <label>
+                    Título
+                    <input id="jogoTitulo" name="titulo" type="text" required>
+                </label>
+
+                <label>
+                    Preço
+                    <input id="jogoPreco" name="preco" type="number" min="0" step="0.01" required>
+                </label>
+
+                <label>
+                    Categorias
+                    <input id="jogoCategorias" name="categorias" type="text" placeholder="RPG, Aventura">
+                </label>
+
+                <label>
+                    URL de download
+                    <input id="jogoDownloadUrl" name="downloadUrl" type="url" placeholder="https://exemplo.com/jogo.exe">
+                </label>
+
+                <label class="span-2">
+                    Descrição
+                    <textarea id="jogoDescricao" name="descricao" rows="3"></textarea>
+                </label>
+
+                <button type="submit">Publicar jogo</button>
+            </form>
+        </section>
+
+        <section class="panel">
+            <div class="header">
+                <div>
+                    <h2>Biblioteca central de jogos</h2>
+                    <p>Jogos publicados por usuários da plataforma.</p>
+                </div>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Título</th>
+                            <th>Preço</th>
+                            <th>Categorias</th>
+                            <th>Publicado em</th>
+                            <th class="acoes">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="jogosTabela">
+                        <tr>
+                            <td colspan="5">Carregando jogos...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="panel">
+            <div class="header">
+                <div>
+                    <h2>Usuários cadastrados</h2>
+                    <p>Contas existentes na plataforma.</p>
+                </div>
+                <a class="button secondary no-print" href="/cadastro">Cadastrar usuário</a>
+            </div>
 
             <div class="table-wrap">
                 <table>
