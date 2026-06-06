@@ -63,7 +63,6 @@ mvn spring-boot:run
 ✅ JpaUsuarioRepository
 ✅ JpaJogoRepository
 ✅ JpaSessaoRepository
-✅ MigrationService (migra CSVs automaticamente)
 ```
 
 ---
@@ -84,7 +83,6 @@ mvn spring-boot:run
 
 | Documento                                                              | Tempo      | Conteúdo               |
 | ---------------------------------------------------------------------- | ---------- | ---------------------- |
-| **[QUICK_START_BANCO_DE_DADOS.md](./QUICK_START_BANCO_DE_DADOS.md)**   | ⚡ 5 min   | 5 passos rápidos       |
 | **[RESUMO_MUDANCAS.md](./RESUMO_MUDANCAS.md)**                         | 📋 10 min  | Antes/depois detalhado |
 | **[MIGRACAO_CSV_PARA_JPA.md](./MIGRACAO_CSV_PARA_JPA.md)**             | 📚 30 min  | Guia completo          |
 | **[CONFIGURACAO_BANCO_DE_DADOS.md](./CONFIGURACAO_BANCO_DE_DADOS.md)** | 💾 Ref     | Schema SQL             |
@@ -146,42 +144,6 @@ mvn spring-boot:run
 
 ---
 
-## 🔄 Arquitetura
-
-```
-┌─────────────────────────────────────────────┐
-│          HTTP Controllers                   │
-│  (Sem mudanças - funcionam igual!)         │
-└────────────────┬────────────────────────────┘
-                 │
-┌────────────────▼────────────────────────────┐
-│  Repository Interfaces                      │
-│  (UsuarioRepository, JogoRepository, etc)   │
-└────────────────┬────────────────────────────┘
-                 │
-┌────────────────▼────────────────────────────┐
-│  Repository Implementations                 │
-│  (Agora usam JPA em vez de CSV)            │
-└────────────────┬────────────────────────────┘
-                 │
-┌────────────────▼────────────────────────────┐
-│  JPA Repositories (Novo!)                   │
-│  (JpaUsuarioRepository, JpaJogoRepository)  │
-└────────────────┬────────────────────────────┘
-                 │
-┌────────────────▼────────────────────────────┐
-│  Hibernate ORM                              │
-│  (Mapeamento objeto-relacional)            │
-└────────────────┬────────────────────────────┘
-                 │
-┌────────────────▼────────────────────────────┐
-│  SQLite Database                            │
-│  (atlantidastore.db - Novo!)               │
-└─────────────────────────────────────────────┘
-```
-
----
-
 ## ✨ Histórico da Migração
 
 ```
@@ -237,8 +199,6 @@ Aprendeu/Implementou:
 - `JpaUsuarioRepository.java`
 - `JpaJogoRepository.java`
 - `JpaSessaoRepository.java`
-- `MigrationService.java`
-- `QUICK_START_BANCO_DE_DADOS.md`
 - `RESUMO_MUDANCAS.md`
 - `MIGRACAO_CSV_PARA_JPA.md`
 - `CONFIGURACAO_BANCO_DE_DADOS.md`
@@ -252,7 +212,7 @@ Aprendeu/Implementou:
 - `Usuario.java` (@Entity)
 - `Jogo.java` (@Entity)
 - `Sessao.java` (@Entity)
-- `UsuarioRepositoryImp.java` (usa JPA)
+- `UsuarioRepository.java` (usa JPA)
 - `JogoRepository.java` (usa JPA)
 - `SessaoRepository.java` (usa JPA)
 

@@ -4,19 +4,13 @@
 
 Se é a primeira vez, siga na ordem:
 
-### **1. [QUICK_START_BANCO_DE_DADOS.md](./QUICK_START_BANCO_DE_DADOS.md)** ⚡ _5 minutos_
-
-- Primeiros passos
-- Comandos para compilar e rodar
-- Verificação rápida
-
-### **2. [RESUMO_MUDANCAS.md](./RESUMO_MUDANCAS.md)** 📋 _10 minutos_
+### **1. [RESUMO_MUDANCAS.md](./RESUMO_MUDANCAS.md)**
 
 - O que foi feito
 - Comparação antes/depois
 - Arquivos criados e modificados
 
-### **3. [MIGRACAO_CSV_PARA_JPA.md](./MIGRACAO_CSV_PARA_JPA.md)** 📚 _Leitura completa_
+### **2. [MIGRACAO_CSV_PARA_JPA.md](./MIGRACAO_CSV_PARA_JPA.md)** 📚 _Leitura completa_
 
 - Guia detalhado de toda migração
 - Como usar após migração
@@ -41,7 +35,6 @@ Se é a primeira vez, siga na ordem:
 
 ### **🚀 Execução & Deploy**
 
-- **[QUICK_START_BANCO_DE_DADOS.md](./QUICK_START_BANCO_DE_DADOS.md)** - 5 passos
 - **[MIGRACAO_CSV_PARA_JPA.md](./MIGRACAO_CSV_PARA_JPA.md)** - Setup completo
 
 ### **🔧 Problemas & Soluções**
@@ -60,12 +53,9 @@ src/main/java/dev/osdiscretos/atlantidastore/
 │   ├── JpaUsuarioRepository.java      ✅ JPA interface
 │   ├── JpaJogoRepository.java         ✅ JPA interface
 │   ├── JpaSessaoRepository.java       ✅ JPA interface
-│   └── UsuarioRepositoryImp.java      ✅ Atualizado
+│   └── UsuarioRepository.java      ✅ Atualizado
 │       JogoRepository.java            ✅ Atualizado
 │       SessaoRepository.java          ✅ Atualizado
-│
-└── service/
-    └── MigrationService.java          ✅ Migração automática
 ```
 
 ### **Configuração (2 arquivos)**
@@ -86,67 +76,16 @@ src/main/java/dev/osdiscretos/atlantidastore/model/
 └── Sessao.java                        ✅ @Entity
 ```
 
-### **Documentação (5 arquivos)**
+### **Documentação (4 arquivos)**
 
 ```
 /
-├── QUICK_START_BANCO_DE_DADOS.md      ⚡ 5 passos rápidos
 ├── RESUMO_MUDANCAS.md                 📋 Comparação antes/depois
 ├── MIGRACAO_CSV_PARA_JPA.md           📚 Guia completo
 ├── CONFIGURACAO_BANCO_DE_DADOS.md     💾 Schema & queries
 ├── TROUBLESHOOTING.md                 🔧 Problemas & soluções
 └── INDEX.md                           📍 Este arquivo
 ```
-
----
-
-## 🎯 Fluxo de Uso
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│ 1. QUICK_START_BANCO_DE_DADOS.md (5 min)                    │
-│    "Quero ver funcionando rápido"                           │
-│    → Comandos: mvn clean compile && mvn spring-boot:run    │
-└─────────────────────────────────────────────────────────────┘
-                           ↓
-┌─────────────────────────────────────────────────────────────┐
-│ 2. RESUMO_MUDANCAS.md (10 min)                              │
-│    "Quero entender o que mudou"                            │
-│    → Antes/depois, arquivos criados, comparação            │
-└─────────────────────────────────────────────────────────────┘
-                           ↓
-┌─────────────────────────────────────────────────────────────┐
-│ 3. MIGRACAO_CSV_PARA_JPA.md (30 min)                        │
-│    "Quero entender toda a migração"                        │
-│    → Passo a passo, detalhes técnicos, próximos passos    │
-└─────────────────────────────────────────────────────────────┘
-                           ↓
-┌─────────────────────────────────────────────────────────────┐
-│ 4. CONFIGURACAO_BANCO_DE_DADOS.md (Referência)             │
-│    "Como faço queries no banco?"                           │
-│    → Schema SQL, exemplos, backup                          │
-└─────────────────────────────────────────────────────────────┘
-                           ↓
-┌─────────────────────────────────────────────────────────────┐
-│ 5. TROUBLESHOOTING.md (Se houver erro)                      │
-│    "Algo não funcionou"                                    │
-│    → Diagnóstico, soluções, checklist                      │
-└─────────────────────────────────────────────────────────────┘
-```
-
----
-
-## ✅ Checklist Rápido
-
-- [ ] Li QUICK_START_BANCO_DE_DADOS.md
-- [ ] Executei: `mvn clean compile`
-- [ ] Executei: `mvn spring-boot:run`
-- [ ] Banco `atlantidastore.db` foi criado
-- [ ] Verificar: `sqlite3 atlantidastore.db "SELECT COUNT(*) FROM usuarios;"`
-- [ ] Testes passando? (Controllers funcionam igual)
-- [ ] Problema? → Ver TROUBLESHOOTING.md
-
----
 
 ## 🚀 Próximos Passos
 
@@ -230,10 +169,6 @@ SELECT * FROM usuarios LIMIT 5;
 ---
 
 ## 🎯 Suporte Rápido
-
-### **"Não entendo nada, quero começar"**
-
-→ Leia: **[QUICK_START_BANCO_DE_DADOS.md](./QUICK_START_BANCO_DE_DADOS.md)**
 
 ### **"Quero entender o que mudou"**
 

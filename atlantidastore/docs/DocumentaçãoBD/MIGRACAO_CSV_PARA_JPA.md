@@ -29,21 +29,33 @@ Este documento descreve como o projeto **AtlantidaStore** foi migrado de um sist
 
 ### **Dependências (pom.xml)**
 
-```xml
-✅ spring-boot-starter-data-jpa  ← Principal! (JPA + Hibernate)
-✅ hibernate-community-dialect   ← Suporte SQLite nativo
-✅ sqlite-jdbc                   ← Driver SQLite (já estava)
-```
+<!-- Spring Data JPA (inclui Hibernate automaticamente) -->
+<spring-boot-starter-data-jpa>
+
+<!-- Driver SQLite -->
+<sqlite-jdbc>
+
+<!-- Dialect Hibernate para SQLite -->
+<hibernate-community-dialects>
 
 ### **Configuração (application.properties)**
 
-```properties
-# Novo!
+# Database: SQLite (arquivo local)
 spring.datasource.url=jdbc:sqlite:atlantidastore.db
 spring.datasource.driver-class-name=org.sqlite.JDBC
+
+# JPA/Hibernate Configuration
 spring.jpa.database-platform=org.hibernate.community.dialect.SQLiteDialect
 spring.jpa.hibernate.ddl-auto=validate
-```
+spring.jpa.show-sql=false
+spring.jpa.properties.hibernate.format_sql=true
+spring.jpa.properties.hibernate.jdbc.batch_size=20
+
+# Destaques:
+
+SQLite: Banco leve armazenado em arquivo local (atlantidastore.db)
+ddl-auto=validate: Valida que as tabelas já existem (não cria/altera automaticamente)
+batch_size=20: Agrupa até 20 operações para melhor performance
 
 ### **Modelos → Entidades JPA**
 
@@ -64,19 +76,9 @@ spring.jpa.hibernate.ddl-auto=validate
 ### **Implementações Atualizadas**
 
 ```java
-✅ UsuarioRepositoryImp.java   ← Agora usa JpaUsuarioRepository
+✅ UsuarioRepository.java   ← Agora usa JpaUsuarioRepository
 ✅ JogoRepository.java          ← Agora usa JpaJogoRepository
 ✅ SessaoRepository.java        ← Agora usa JpaSessaoRepository
-```
-
-### **Serviço de Migração (Novo)**
-
-```java
-✅ MigrationService.java
-   - Implementa ApplicationRunner
-   - Executa na inicialização
-   - Lê CSVs e migra para BD
-   - Executa apenas 1x (verifica se dados já existem)
 ```
 
 ---
@@ -97,9 +99,8 @@ mvn spring-boot:run
 
 1. Spring Boot inicia
 2. Hibernate cria as tabelas automaticamente
-3. `MigrationService` detecta CSVs e migra os dados
-4. Banco `atlantidastore.db` é criado
-5. Aplicação já usa o novo banco!
+3. Banco `atlantidastore.db` é criado
+4. Aplicação já usa o novo banco!
 
 ### **2. Acessar o Banco (Opcional)**
 
@@ -194,15 +195,10 @@ int deleteByExpiraEmBefore(LocalDateTime dataLimite);
 └──────────────┬──────────────┘
                │
                ▼
-┌─────────────────────────────┐
-│ Repository Interfaces       │
-│ (UsuarioRepository, etc)    │
-└──────────────┬──────────────┘
-               │
-               ▼
+
 ┌─────────────────────────────┐
 │ Repository Implementations  │
-│ (UsuarioRepositoryImp, etc) │
+│ (UsuarioRepository, etc)    │
 └──────────────┬──────────────┘
                │
                ▼
@@ -249,11 +245,6 @@ int deleteByExpiraEmBefore(LocalDateTime dataLimite);
 ### **Erro: "No suitable driver found for jdbc:sqlite"**
 
 → Falta o driver SQLite. Rode: `mvn dependency:resolve`
-
-### **Dados não apareceram após migração**
-
-→ Verifique que os CSVs existem em `data/`.
-→ Veja os logs da aplicação para erros na MigrationService.
 
 ### **Quero voltar aos CSVs**
 

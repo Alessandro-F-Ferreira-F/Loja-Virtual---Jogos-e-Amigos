@@ -1,20 +1,47 @@
 package dev.osdiscretos.atlantidastore.repository;
 
-import java.util.UUID;
 import java.util.List;
+import java.util.UUID;
+
+import org.springframework.stereotype.Repository;
 
 import dev.osdiscretos.atlantidastore.model.Usuario;
 
-public interface UsuarioRepository {
-    Usuario save(Usuario user);
+@Repository
+public class UsuarioRepository {
+    private final JpaUsuarioRepository jpaRepository;
 
-    Usuario findByID(UUID id);
+    public UsuarioRepository(JpaUsuarioRepository jpaRepository) {
+        this.jpaRepository = jpaRepository;
+    }
 
-    Usuario findByEmail(String email);
+    public Usuario save(Usuario user) {
+        return jpaRepository.save(user);
+    }
 
-    List<Usuario> listAll();
+    public Usuario findByID(UUID id) {
+        return jpaRepository.findById(id).orElse(null);
+    }
 
-    void removeByID(UUID id);
+    public Usuario findByEmail(String email) {
+        if (email == null) {
+            return null;
+        }
+        return jpaRepository.findByEmailIgnoreCase(email).orElse(null);
+    }
 
-    boolean isEmailRegistered(String email);
+    public List<Usuario> listAll() {
+        return jpaRepository.findAll();
+    }
+
+    public void removeByID(UUID id) {
+        jpaRepository.deleteById(id);
+    }
+
+    public boolean isEmailRegistered(String email) {
+        if (email == null) {
+            return false;
+        }
+        return jpaRepository.existsByEmailIgnoreCase(email);
+    }
 }

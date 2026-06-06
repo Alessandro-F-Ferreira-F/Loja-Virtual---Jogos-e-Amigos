@@ -43,7 +43,7 @@ No `pom.xml` (nada foi removido, apenas adicionado!)
 │   ├── jogos           ← Tabela SQL
 │   └── sessoes         ← Tabela SQL
 │
-├── UsuarioRepositoryImp
+├── UsuarioRepository
 │   └── jpaRepository.save()  ← 1 linha via JPA
 │
 ├── JpaUsuarioRepository
@@ -76,22 +76,11 @@ No `pom.xml` (nada foi removido, apenas adicionado!)
    - deleteByExpiraEmBefore()
 ```
 
-### **Serviço de Migração (1 arquivo)**
-
-```
-✅ MigrationService.java
-   - Implementa ApplicationRunner
-   - Executa na inicialização
-   - Migra dados dos CSVs → Banco
-   - Executa apenas 1x
-```
-
 ### **Documentação (3 arquivos)**
 
 ```
 ✅ MIGRACAO_CSV_PARA_JPA.md          ← Guia completo
 ✅ CONFIGURACAO_BANCO_DE_DADOS.md    ← Schema SQL
-✅ QUICK_START_BANCO_DE_DADOS.md     ← 5 passos rápidos
 ✅ RESUMO_MUDANCAS.md                ← Este arquivo
 ```
 
@@ -152,6 +141,7 @@ spring.jpa.hibernate.ddl-auto=validate
 
 ### **4. UsuarioRepositoryImp.java**
 
+//UsuarioRepositoryImp foi renomeado apenas para UsuarioRepository, classe que possui como atributo, JPAUsuarioRepository, que implementa a interface JPARepository
 ```diff
 - public class UsuarioRepositoryImp implements UsuarioRepository {
 -   private final Path arquivo = Path.of("data", "usuarios.csv");
@@ -159,7 +149,7 @@ spring.jpa.hibernate.ddl-auto=validate
 -   private List<Usuario> readAll() {
 -     return Files.readAllLines(arquivo, ...)
 -   }
-+ public class UsuarioRepositoryImp implements UsuarioRepository {
++ public class UsuarioRepository {
 +   private final JpaUsuarioRepository jpaRepository;
 +
 +   public UsuarioRepositoryImp(JpaUsuarioRepository jpaRepository) {
@@ -174,7 +164,6 @@ spring.jpa.hibernate.ddl-auto=validate
 -       users.add(user);
 -       writeAll(users);
 -     }
-+   @Override
 +   public Usuario save(Usuario user) {
 +     return jpaRepository.save(user);
     }
@@ -273,9 +262,9 @@ Arquivo: data/usuarios.csv
 ```
 Controller
     ↓
-UsuarioRepository (interface)
+UsuarioService
     ↓
-UsuarioRepositoryImp (JPA)
+UsuarioRepository (JPA)
     ├─ jpaRepository.save()
     ├─ jpaRepository.findById()
     └─ jpaRepository.findByEmailIgnoreCase()
