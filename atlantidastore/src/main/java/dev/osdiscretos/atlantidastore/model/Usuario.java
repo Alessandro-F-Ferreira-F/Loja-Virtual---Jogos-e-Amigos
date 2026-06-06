@@ -1,16 +1,29 @@
 package dev.osdiscretos.atlantidastore.model;
 
-
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-
+@Entity
+@Table(name = "usuarios")
 public class Usuario {
-    private final UUID id;
-    private final String nome;
-    private final String email;
-    private final String senhaHash;
-    private final LocalDateTime dataCriacao;
+    @Id
+    @Column(columnDefinition = "TEXT")
+    private UUID id;
+
+    @Column(nullable = false, length = 255)
+    private String nome;
+
+    @Column(nullable = false, unique = true, length = 255)
+    private String email;
+
+    @Column(nullable = false, length = 255)
+    private String senhaHash;
+
+    @Column(nullable = false)
+    private LocalDateTime dataCriacao;
+
+    protected Usuario() {}
 
     public Usuario(String nome, String email, String senhaHash) {
         this.id = UUID.randomUUID();

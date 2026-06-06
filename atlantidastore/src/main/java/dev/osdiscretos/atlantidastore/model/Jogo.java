@@ -1,19 +1,42 @@
 package dev.osdiscretos.atlantidastore.model;
 
+import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
+@Entity
+@Table(name = "jogos")
 public class Jogo {
-    private final UUID id;
-    private final String titulo;
-    private final String descricao;
-    private final BigDecimal preco;
-    private final UUID publicadorId;
-    private final List<String> categorias;
-    private final LocalDateTime dataCriacao;
-    private final String downloadUrl;
+    @Id
+    @Column(columnDefinition = "TEXT")
+    private UUID id;
+
+    @Column(nullable = false, length = 255)
+    private String titulo;
+
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String descricao;
+
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal preco;
+
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private UUID publicadorId;
+
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String categorias;
+
+    @Column(nullable = false)
+    private LocalDateTime dataCriacao;
+
+    @Column(nullable = false, length = 500)
+    private String downloadUrl;
+
+    protected Jogo() {}
 
     public Jogo(
         String titulo,
@@ -41,7 +64,7 @@ public class Jogo {
         this.descricao = descricao;
         this.preco = preco;
         this.publicadorId = publicadorId;
-        this.categorias = List.copyOf(categorias);
+        this.categorias = String.join("|", categorias);
         this.dataCriacao = dataCriacao;
         this.downloadUrl = downloadUrl;
     }
@@ -67,7 +90,13 @@ public class Jogo {
     }
 
     public List<String> getCategorias() {
-        return categorias;
+        if (categorias == null || categorias.isBlank()) {
+            return List.of();
+        }
+        return Arrays.stream(categorias.split("\\|"))
+            .map(String::trim)
+            .filter(s -> !s.isBlank())
+            .collect(Collectors.toList());
     }
 
     public LocalDateTime getDataCriacao() {

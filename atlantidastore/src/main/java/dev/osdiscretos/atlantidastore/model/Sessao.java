@@ -1,13 +1,26 @@
 package dev.osdiscretos.atlantidastore.model;
 
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+@Entity
+@Table(name = "sessoes")
 public class Sessao {
-    private final String token;
-    private final UUID usuarioId;
-    private final LocalDateTime criadoEm;
-    private final LocalDateTime expiraEm;
+    @Id
+    @Column(nullable = false, length = 500)
+    private String token;
+
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private UUID usuarioId;
+
+    @Column(nullable = false)
+    private LocalDateTime criadoEm;
+
+    @Column(nullable = false)
+    private LocalDateTime expiraEm;
+
+    protected Sessao() {}
 
     public Sessao(String token, UUID usuarioId, LocalDateTime criadoEm, LocalDateTime expiraEm) {
         this.token = token;
