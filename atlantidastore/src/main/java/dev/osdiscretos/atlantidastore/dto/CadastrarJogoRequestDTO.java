@@ -1,7 +1,14 @@
 package dev.osdiscretos.atlantidastore.dto;
 
-public record CadastrarJogoRequestDTO (
-    String nome,
+import java.math.BigDecimal;
+import java.util.List;
+
+public record CadastrarJogoRequestDTO(
+    String titulo,
     String descricao,
-    double preco
-) { }
+    BigDecimal preco,
+    List<String> categorias,
+    String downloadUrl,
+    String imagemCapa
+) {
+}

@@ -1,61 +1,119 @@
 package dev.osdiscretos.atlantidastore.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-
+import jakarta.persistence.*;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "jogos")
 public class Jogo {
     @Id
+    @Column(columnDefinition = "TEXT")
     private UUID id;
-    private String nome;
+
+    @Column(nullable = false, length = 255)
+    private String titulo;
+
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String descricao;
-    private double preco;
-    private LocalDateTime dataPublicacao;
 
-    protected Jogo() {} // Construtor exigido pelo JPA
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal preco;
 
-    public Jogo(String nome, String descricao, double preco) {
-        this.id = UUID.randomUUID();
-        this.nome = nome;
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private UUID publicadorId;
+
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String categorias;
+
+    @Column(nullable = false)
+    private LocalDateTime dataCriacao;
+
+    @Column(nullable = false, length = 500)
+    private String downloadUrl;
+
+    @Column(columnDefinition = "TEXT")
+    private String imagemCapa;
+
+    protected Jogo() {}
+
+    public Jogo(
+        String titulo,
+        String descricao,
+        BigDecimal preco,
+        UUID publicadorId,
+        List<String> categorias,
+        String downloadUrl,
+        String imagemCapa
+    ) {
+        this(UUID.randomUUID(), titulo, descricao, preco, publicadorId, categorias, LocalDateTime.now(), downloadUrl, imagemCapa);
+    }
+
+    public Jogo(
+        UUID id,
+        String titulo,
+        String descricao,
+        BigDecimal preco,
+        UUID publicadorId,
+        List<String> categorias,
+        LocalDateTime dataCriacao,
+        String downloadUrl,
+        String imagemCapa
+    ) {
+        this.id = id;
+        this.titulo = titulo;
         this.descricao = descricao;
         this.preco = preco;
-        this.dataPublicacao = LocalDateTime.now();
+        this.publicadorId = publicadorId;
+        this.categorias = String.join("|", categorias);
+        this.dataCriacao = dataCriacao;
+        this.downloadUrl = downloadUrl;
+        this.imagemCapa = imagemCapa;
     }
 
     public UUID getId() {
         return id;
     }
 
-    public String getNome() {
-        return nome;
-    }
-
-    public void setNome(String nome) {
-        this.nome = nome;
+    public String getTitulo() {
+        return titulo;
     }
 
     public String getDescricao() {
         return descricao;
     }
 
-    public void setDescricao(String descricao) {
-        this.descricao = descricao;
-    }
-
-    public double getPreco() {
+    public BigDecimal getPreco() {
         return preco;
     }
 
-    public void setPreco(double preco) {
-        this.preco = preco;
+    public UUID getPublicadorId() {
+        return publicadorId;
     }
 
-    public LocalDateTime getDataPublicacao() {
-        return dataPublicacao;
+    public List<String> getCategorias() {
+        if (categorias == null || categorias.isBlank()) {
+            return List.of();
+        }
+        return Arrays.stream(categorias.split("\\|"))
+            .map(String::trim)
+            .filter(s -> !s.isBlank())
+            .collect(Collectors.toList());
+    }
+
+    public LocalDateTime getDataCriacao() {
+        return dataCriacao;
+    }
+
+    public String getDownloadUrl() {
+        return downloadUrl;
+    }
+
+    public String getImagemCapa() {
+        return imagemCapa;
     }
 }

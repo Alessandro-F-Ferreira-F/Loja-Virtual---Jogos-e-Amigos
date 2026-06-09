@@ -1,10 +1,6 @@
 package dev.osdiscretos.atlantidastore.model;
 
-
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -12,26 +8,37 @@ import java.util.UUID;
 @Table(name = "usuarios")
 public class Usuario {
     @Id
+    @Column(columnDefinition = "TEXT")
     private UUID id;
+
+    @Column(nullable = false, length = 255)
     private String nome;
+
+    @Column(nullable = false, unique = true, length = 255)
     private String email;
+
+    @Column(nullable = false, length = 255)
+    private String senhaHash;
+
+    @Column(nullable = false)
     private LocalDateTime dataCriacao;
 
-    // Configurações de Privacidade (Sugestão 4)
-    private boolean perfilPublico;
-    private boolean jogosAdquiridosPublicos;
+    protected Usuario() {}
 
-    protected Usuario() {} // Construtor padrão exigido pelo JPA
-
-    public Usuario(String nome, String email) {
+    public Usuario(String nome, String email, String senhaHash) {
         this.id = UUID.randomUUID();
         this.nome = nome;
         this.email = email;
+        this.senhaHash = senhaHash;
         this.dataCriacao = LocalDateTime.now();
-        
-        // Padrões de privacidade iniciais
-        this.perfilPublico = true;
-        this.jogosAdquiridosPublicos = false;
+    }
+
+    public Usuario(UUID id, String nome, String email, String senhaHash, LocalDateTime dataCriacao) {
+        this.id = id;
+        this.nome = nome;
+        this.email = email;
+        this.senhaHash = senhaHash;
+        this.dataCriacao = dataCriacao;
     }
 
     public UUID getId() {
@@ -46,23 +53,11 @@ public class Usuario {
         return email;
     }
 
+    public String getSenhaHash() {
+        return senhaHash;
+    }
+
     public LocalDateTime getDataCriacao() {
         return dataCriacao;
-    }
-
-    public boolean isPerfilPublico() {
-        return perfilPublico;
-    }
-
-    public void setPerfilPublico(boolean perfilPublico) {
-        this.perfilPublico = perfilPublico;
-    }
-
-    public boolean isJogosAdquiridosPublicos() {
-        return jogosAdquiridosPublicos;
-    }
-
-    public void setJogosAdquiridosPublicos(boolean jogosAdquiridosPublicos) {
-        this.jogosAdquiridosPublicos = jogosAdquiridosPublicos;
     }
 }

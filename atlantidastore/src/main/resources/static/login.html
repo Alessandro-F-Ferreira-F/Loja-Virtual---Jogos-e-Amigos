@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Login</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <main class="container narrow">
+        <section class="panel">
+            <div class="header">
+                <div>
+                    <h1>Login</h1>
+                    <p>Acesse sua conta para gerenciar os usuários.</p>
+                </div>
+            </div>
+
+            <form id="loginForm" class="form single">
+                <label>
+                    E-mail
+                    <input id="email" name="email" type="email" autocomplete="email" required>
+                </label>
+
+                <label>
+                    Senha
+                    <div class="senha-wrapper">
+                        <input id="senha" name="senha" type="password" autocomplete="current-password" required>
+                        <button type="button" class="toggle-senha" id="toggleSenha" aria-label="Mostrar senha"></button>
+                    </div>
+                </label>
+
+                <button type="submit">Entrar</button>
+            </form>
+
+            <p id="mensagem" class="mensagem" role="status"></p>
+
+            <p class="footer-link">
+                Não tem conta? <a href="/cadastro">Cadastre-se</a>
+            </p>
+        </section>
+    </main>
+
+    <script src="/login.js"></script>
+</body>
+</html>

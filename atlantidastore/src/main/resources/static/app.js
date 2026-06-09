@@ -1,10 +1,15 @@
-const form = document.getElementById("usuarioForm");
-const nomeInput = document.getElementById("nome");
-const emailInput = document.getElementById("email");
+const usuarioLogado = document.getElementById("usuarioLogado");
 const mensagem = document.getElementById("mensagem");
-const tabela = document.getElementById("usuariosTabela");
-const atualizarButton = document.getElementById("atualizarButton");
+const usuariosTabela = document.getElementById("usuariosTabela");
+const jogosTabela = document.getElementById("jogosTabela");
+const jogoForm = document.getElementById("jogoForm");
+const jogoTituloInput = document.getElementById("jogoTitulo");
+const jogoDescricaoInput = document.getElementById("jogoDescricao");
+const jogoPrecoInput = document.getElementById("jogoPreco");
+const jogoCategoriasInput = document.getElementById("jogoCategorias");
+const jogoDownloadUrlInput = document.getElementById("jogoDownloadUrl");
 const imprimirButton = document.getElementById("imprimirButton");
+const logoutButton = document.getElementById("logoutButton");
 
 function mostrarMensagem(texto, erro = false) {
     mensagem.textContent = texto;
@@ -22,6 +27,13 @@ function formatarData(valor) {
     }).format(new Date(valor));
 }
 
+function formatarPreco(valor) {
+    return new Intl.NumberFormat("pt-BR", {
+        style: "currency",
+        currency: "BRL"
+    }).format(Number(valor ?? 0));
+}
+
 function escaparHtml(valor) {
     return String(valor ?? "")
         .replaceAll("&", "&amp;")
@@ -33,85 +45,136 @@ function escaparHtml(valor) {
 
 function renderizarUsuarios(usuarios) {
     if (usuarios.length === 0) {
-        tabela.innerHTML = '<tr><td colspan="4">Nenhum usuário cadastrado.</td></tr>';
+        usuariosTabela.innerHTML = '<tr><td colspan="4">Nenhum usuário cadastrado.</td></tr>';
         return;
     }
 
-    tabela.innerHTML = usuarios.map((usuario) => `
+    usuariosTabela.innerHTML = usuarios.map((usuario) => `
         <tr>
             <td>${escaparHtml(usuario.nome)}</td>
             <td>${escaparHtml(usuario.email)}</td>
             <td>${formatarData(usuario.dataCriacao)}</td>
             <td class="acoes">
-                <button class="danger" type="button" data-id="${usuario.id}">Remover</button>
+                <button class="danger" type="button" data-user-id="${usuario.id}">Remover</button>
             </td>
         </tr>
     `).join("");
 }
 
-async function carregarUsuarios() {
-    const resposta = await fetch("/api/usuarios");
-
-    if (!resposta.ok) {
-        throw new Error("Não foi possível carregar os usuários.");
+function renderizarJogos(jogos) {
+    if (jogos.length === 0) {
+        jogosTabela.innerHTML = '<tr><td colspan="5">Nenhum jogo publicado.</td></tr>';
+        return;
     }
 
-    const usuarios = await resposta.json();
-    renderizarUsuarios(usuarios);
+    jogosTabela.innerHTML = jogos.map((jogo) => `
+        <tr>
+            <td>
+                <strong>${escaparHtml(jogo.titulo)}</strong>
+                <div class="muted">${escaparHtml(jogo.descricao)}</div>
+            </td>
+            <td>${formatarPreco(jogo.preco)}</td>
+            <td>${escaparHtml((jogo.categorias || []).join(", "))}</td>
+            <td>${formatarData(jogo.dataCriacao)}</td>
+            <td class="acoes">
+                <button class="danger" type="button" data-game-id="${jogo.id}">Remover</button>
+            </td>
+        </tr>
+    `).join("");
 }
 
-async function cadastrarUsuario(event) {
+async function fetchJson(url, options = {}) {
+    const resposta = await fetch(url, options);
+
+    if (resposta.status === 401) {
+        window.location.href = "/login";
+        return null;
+    }
+
+    if (!resposta.ok) {
+        const erro = await resposta.json().catch(() => ({}));
+        throw new Error(erro.mensagem || "Não foi possível concluir a operação.");
+    }
+
+    if (resposta.status === 204) {
+        return null;
+    }
+
+    return resposta.json();
+}
+
+async function carregarSessao() {
+    const usuario = await fetchJson("/api/auth/me");
+
+    if (usuario) {
+        usuarioLogado.textContent = `Logado como ${usuario.nome} (${usuario.email})`;
+    }
+}
+
+async function carregarUsuarios() {
+    const usuarios = await fetchJson("/api/usuarios");
+
+    if (usuarios) {
+        renderizarUsuarios(usuarios);
+    }
+}
+
+async function carregarJogos() {
+    const jogos = await fetchJson("/api/jogos");
+
+    if (jogos) {
+        renderizarJogos(jogos);
+    }
+}
+
+async function publicarJogo(event) {
     event.preventDefault();
 
-    const usuario = {
-        nome: nomeInput.value,
-        email: emailInput.value
-    };
+    const categorias = jogoCategoriasInput.value
+        .split(",")
+        .map((categoria) => categoria.trim())
+        .filter(Boolean);
 
-    const resposta = await fetch("/api/usuarios", {
+    await fetchJson("/api/jogos", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
         },
-        body: JSON.stringify(usuario)
+        body: JSON.stringify({
+            titulo: jogoTituloInput.value,
+            descricao: jogoDescricaoInput.value,
+            preco: jogoPrecoInput.value,
+            categorias,
+            downloadUrl: jogoDownloadUrlInput.value
+        })
     });
 
-    if (!resposta.ok) {
-        const erro = await resposta.json();
-        throw new Error(erro.mensagem || "Não foi possível cadastrar o usuário.");
-    }
-
-    form.reset();
-    mostrarMensagem("Usuário cadastrado com sucesso.");
-    await carregarUsuarios();
+    jogoForm.reset();
+    mostrarMensagem("Jogo publicado com sucesso.");
+    await carregarJogos();
 }
 
 async function removerUsuario(id) {
-    const resposta = await fetch(`/api/usuarios/${id}`, {
+    await fetchJson(`/api/usuarios/${id}`, {
         method: "DELETE"
     });
 
-    if (!resposta.ok) {
-        const erro = await resposta.json();
-        throw new Error(erro.mensagem || "Não foi possível remover o usuário.");
-    }
-
     mostrarMensagem("Usuário removido com sucesso.");
-    await carregarUsuarios();
+    await Promise.all([carregarUsuarios(), carregarJogos()]);
 }
 
-form.addEventListener("submit", async (event) => {
-    try {
-        await cadastrarUsuario(event);
-    } catch (error) {
-        mostrarMensagem(error.message, true);
-    }
-});
+async function removerJogo(id) {
+    await fetchJson(`/api/jogos/${id}`, {
+        method: "DELETE"
+    });
 
-atualizarButton.addEventListener("click", async () => {
+    mostrarMensagem("Jogo removido com sucesso.");
+    await carregarJogos();
+}
+
+jogoForm.addEventListener("submit", async (event) => {
     try {
-        await carregarUsuarios();
-        mostrarMensagem("Lista atualizada.");
+        await publicarJogo(event);
     } catch (error) {
         mostrarMensagem(error.message, true);
     }
@@ -121,18 +184,40 @@ imprimirButton.addEventListener("click", () => {
     window.print();
 });
 
-tabela.addEventListener("click", async (event) => {
-    if (!event.target.matches("button[data-id]")) {
+logoutButton.addEventListener("click", async () => {
+    await fetch("/api/auth/logout", {
+        method: "POST"
+    });
+
+    window.location.href = "/login";
+});
+
+usuariosTabela.addEventListener("click", async (event) => {
+    if (!event.target.matches("button[data-user-id]")) {
         return;
     }
 
     try {
-        await removerUsuario(event.target.dataset.id);
+        await removerUsuario(event.target.dataset.userId);
     } catch (error) {
         mostrarMensagem(error.message, true);
     }
 });
 
-carregarUsuarios().catch((error) => {
-    mostrarMensagem(error.message, true);
+jogosTabela.addEventListener("click", async (event) => {
+    if (!event.target.matches("button[data-game-id]")) {
+        return;
+    }
+
+    try {
+        await removerJogo(event.target.dataset.gameId);
+    } catch (error) {
+        mostrarMensagem(error.message, true);
+    }
 });
+
+Promise.all([
+    carregarSessao(),
+    carregarUsuarios(),
+    carregarJogos()
+]).catch((error) => mostrarMensagem(error.message, true));

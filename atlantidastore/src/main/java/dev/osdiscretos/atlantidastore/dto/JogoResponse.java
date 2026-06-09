@@ -1,23 +1,34 @@
 package dev.osdiscretos.atlantidastore.dto;
 
-import java.util.UUID;
-import java.time.LocalDateTime;
 import dev.osdiscretos.atlantidastore.model.Jogo;
 
-public record JogoResponse (
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
+
+public record JogoResponse(
     UUID id,
-    String nome,
+    String titulo,
     String descricao,
-    double preco,
-    LocalDateTime dataPublicacao
-) { 
+    BigDecimal preco,
+    UUID publicadorId,
+    List<String> categorias,
+    LocalDateTime dataCriacao,
+    String downloadUrl,
+    String imagemCapa
+) {
     public static JogoResponse from(Jogo jogo) {
         return new JogoResponse(
-            jogo.getId(), 
-            jogo.getNome(), 
-            jogo.getDescricao(), 
+            jogo.getId(),
+            jogo.getTitulo(),
+            jogo.getDescricao(),
             jogo.getPreco(),
-            jogo.getDataPublicacao()
+            jogo.getPublicadorId(),
+            jogo.getCategorias(),
+            jogo.getDataCriacao(),
+            jogo.getDownloadUrl(),
+            jogo.getImagemCapa()
         );
-    }    
+    }
 }
