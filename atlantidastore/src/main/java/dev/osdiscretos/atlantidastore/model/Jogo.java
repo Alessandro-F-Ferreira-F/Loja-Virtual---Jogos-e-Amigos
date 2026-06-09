@@ -36,6 +36,9 @@ public class Jogo {
     @Column(nullable = false, length = 500)
     private String downloadUrl;
 
+    @Column(columnDefinition = "TEXT")
+    private String imagemCapa;
+
     protected Jogo() {}
 
     public Jogo(
@@ -44,9 +47,10 @@ public class Jogo {
         BigDecimal preco,
         UUID publicadorId,
         List<String> categorias,
-        String downloadUrl
+        String downloadUrl,
+        String imagemCapa
     ) {
-        this(UUID.randomUUID(), titulo, descricao, preco, publicadorId, categorias, LocalDateTime.now(), downloadUrl);
+        this(UUID.randomUUID(), titulo, descricao, preco, publicadorId, categorias, LocalDateTime.now(), downloadUrl, imagemCapa);
     }
 
     public Jogo(
@@ -57,7 +61,8 @@ public class Jogo {
         UUID publicadorId,
         List<String> categorias,
         LocalDateTime dataCriacao,
-        String downloadUrl
+        String downloadUrl,
+        String imagemCapa
     ) {
         this.id = id;
         this.titulo = titulo;
@@ -67,6 +72,7 @@ public class Jogo {
         this.categorias = String.join("|", categorias);
         this.dataCriacao = dataCriacao;
         this.downloadUrl = downloadUrl;
+        this.imagemCapa = imagemCapa;
     }
 
     public UUID getId() {
@@ -105,5 +111,9 @@ public class Jogo {
 
     public String getDownloadUrl() {
         return downloadUrl;
+    }
+
+    public String getImagemCapa() {
+        return imagemCapa;
     }
 }

@@ -8,6 +8,7 @@ public record CadastrarJogoRequestDTO(
     String descricao,
     BigDecimal preco,
     List<String> categorias,
-    String downloadUrl
+    String downloadUrl,
+    String imagemCapa
 ) {
 }

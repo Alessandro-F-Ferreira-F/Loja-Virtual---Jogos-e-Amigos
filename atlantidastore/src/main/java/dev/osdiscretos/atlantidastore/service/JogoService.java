@@ -34,6 +34,7 @@ public class JogoService {
         BigDecimal preco = request.preco();
         List<String> categorias = normalizeCategorias(request.categorias());
         String downloadUrl = normalize(request.downloadUrl());
+        String imagemCapa = normalize(request.imagemCapa());
 
         if (titulo.isBlank()) {
             throw new IllegalArgumentException("Título do jogo é obrigatório");
@@ -57,7 +58,8 @@ public class JogoService {
             preco,
             publicador.getId(),
             categorias,
-            downloadUrl
+            downloadUrl,
+            imagemCapa
         );
 
         return JogoResponse.from(jogoRepository.save(jogo));

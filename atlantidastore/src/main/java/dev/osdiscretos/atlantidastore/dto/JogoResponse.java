@@ -15,7 +15,8 @@ public record JogoResponse(
     UUID publicadorId,
     List<String> categorias,
     LocalDateTime dataCriacao,
-    String downloadUrl
+    String downloadUrl,
+    String imagemCapa
 ) {
     public static JogoResponse from(Jogo jogo) {
         return new JogoResponse(
@@ -26,7 +27,8 @@ public record JogoResponse(
             jogo.getPublicadorId(),
             jogo.getCategorias(),
             jogo.getDataCriacao(),
-            jogo.getDownloadUrl()
+            jogo.getDownloadUrl(),
+            jogo.getImagemCapa()
         );
     }
 }
