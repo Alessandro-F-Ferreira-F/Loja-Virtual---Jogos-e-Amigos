@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Atlantida Store</title>
+    <title>Minha Biblioteca - Atlantida Store</title>
     <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
@@ -23,26 +23,19 @@
     <main class="container">
         <section class="page-title">
             <div>
-                <h1>Feed de jogos</h1>
-                <p id="usuarioLogado">Carregando sessão...</p>
+                <h1>Minha Biblioteca</h1>
+                <p>Jogos adicionados à sua conta.</p>
             </div>
             <p id="mensagem" class="mensagem" role="status"></p>
         </section>
 
         <section class="panel">
-            <div class="header">
-                <div>
-                    <h2>Publicados recentemente</h2>
-                    <p>Jogos ordenados pela data de publicação.</p>
-                </div>
-            </div>
-
-            <div id="feedLista" class="game-grid">
-                <p class="empty">Carregando jogos...</p>
+            <div id="bibliotecaLista" class="game-grid">
+                <p class="empty">Carregando biblioteca...</p>
             </div>
         </section>
     </main>
 
-    <script src="/app.js"></script>
+    <script src="/biblioteca.js"></script>
 </body>
 </html>

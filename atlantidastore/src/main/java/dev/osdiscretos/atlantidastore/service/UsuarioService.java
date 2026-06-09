@@ -6,9 +6,12 @@ import dev.osdiscretos.atlantidastore.model.Usuario;
 import dev.osdiscretos.atlantidastore.repository.SessaoRepository;
 import dev.osdiscretos.atlantidastore.repository.UsuarioRepository;
 import dev.osdiscretos.atlantidastore.dto.CadastroRequestDTO;
+import dev.osdiscretos.atlantidastore.dto.PerfilPublicoUsuarioDTO;
+import dev.osdiscretos.atlantidastore.dto.PerfilUsuarioDTO;
 import dev.osdiscretos.atlantidastore.dto.UsuarioResponse;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -20,15 +23,21 @@ public class UsuarioService {
     private final UsuarioRepository usuarioRepository;
     private final SessaoRepository sessaoRepository;
     private final PasswordHasher passwordHasher;
+    private final JogoService jogoService;
+    private final BibliotecaService bibliotecaService;
 
     public UsuarioService(
         UsuarioRepository usuarioRepository,
         SessaoRepository sessaoRepository,
-        PasswordHasher passwordHasher
+        PasswordHasher passwordHasher,
+        JogoService jogoService,
+        BibliotecaService bibliotecaService
     ) {
         this.usuarioRepository = usuarioRepository;
         this.sessaoRepository = sessaoRepository;
         this.passwordHasher = passwordHasher;
+        this.jogoService = jogoService;
+        this.bibliotecaService = bibliotecaService;
     }
 
 
@@ -94,6 +103,35 @@ public class UsuarioService {
 
         usuarioRepository.removeByID(id);
         sessaoRepository.removeByUsuarioId(id);
+    }
+
+    @Transactional(readOnly = true)
+    public PerfilUsuarioDTO perfil(UUID usuarioId) {
+        Usuario usuario = usuarioRepository.findByID(usuarioId);
+
+        if (usuario == null) {
+            throw new NoSuchElementException("Usuário não encontrado");
+        }
+
+        return PerfilUsuarioDTO.from(
+            usuario,
+            jogoService.listarJogosPublicadosPorUsuario(usuarioId),
+            bibliotecaService.listarBiblioteca(usuarioId)
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public PerfilPublicoUsuarioDTO perfilPublico(UUID usuarioId) {
+        Usuario usuario = usuarioRepository.findByID(usuarioId);
+
+        if (usuario == null) {
+            throw new NoSuchElementException("Usuário não encontrado");
+        }
+
+        return PerfilPublicoUsuarioDTO.from(
+            usuario,
+            jogoService.listarJogosPublicadosPorUsuario(usuarioId)
+        );
     }
 
     private String normalize(String value) {

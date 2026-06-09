@@ -1,13 +1,19 @@
 package dev.osdiscretos.atlantidastore.controller;
 
 
+import dev.osdiscretos.atlantidastore.auth.SessionKey;
 import dev.osdiscretos.atlantidastore.dto.CadastroRequestDTO;
 import dev.osdiscretos.atlantidastore.dto.ErroResponse;
+import dev.osdiscretos.atlantidastore.dto.PerfilPublicoUsuarioDTO;
+import dev.osdiscretos.atlantidastore.dto.PerfilUsuarioDTO;
 import dev.osdiscretos.atlantidastore.dto.UsuarioResponse;
+import dev.osdiscretos.atlantidastore.model.Usuario;
+import dev.osdiscretos.atlantidastore.service.AuthService;
 import dev.osdiscretos.atlantidastore.service.UsuarioService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -17,9 +23,11 @@ import java.util.UUID;
 @RequestMapping("/api/usuarios")
 public class UsuarioController {
     private final UsuarioService usuarioService;
+    private final AuthService authService;
 
-    public UsuarioController(UsuarioService usuarioService) {
+    public UsuarioController(UsuarioService usuarioService, AuthService authService) {
         this.usuarioService = usuarioService;
+        this.authService = authService;
     }
 
     // Endpoint de cadastro de usuário
@@ -36,6 +44,19 @@ public class UsuarioController {
     @GetMapping
     public ResponseEntity<List<UsuarioResponse>> listUsers() {
         return ResponseEntity.ok(usuarioService.listAll());
+    }
+
+    @GetMapping("/me/perfil")
+    public ResponseEntity<PerfilUsuarioDTO> meuPerfil(
+        @CookieValue(name = SessionKey.COOKIE_NAME, required = false) String token
+    ) {
+        Usuario usuario = usuarioAutenticado(token);
+        return ResponseEntity.ok(usuarioService.perfil(usuario.getId()));
+    }
+
+    @GetMapping("/{id}/perfil-publico")
+    public ResponseEntity<PerfilPublicoUsuarioDTO> perfilPublico(@PathVariable UUID id) {
+        return ResponseEntity.ok(usuarioService.perfilPublico(id));
     }
 
     // Endpoint de remoção de usuário
@@ -59,5 +80,15 @@ public class UsuarioController {
         return ResponseEntity
             .status(HttpStatus.NOT_FOUND)
             .body(new ErroResponse(exception.getMessage()));
+    }
+
+    private Usuario usuarioAutenticado(String token) {
+        Usuario usuario = authService.findUserBySessionToken(token);
+
+        if (usuario == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Login obrigatório");
+        }
+
+        return usuario;
     }
 }

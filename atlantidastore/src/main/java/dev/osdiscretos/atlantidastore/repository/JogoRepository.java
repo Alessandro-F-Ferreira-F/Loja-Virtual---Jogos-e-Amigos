@@ -1,6 +1,7 @@
 package dev.osdiscretos.atlantidastore.repository;
 
 import dev.osdiscretos.atlantidastore.model.Jogo;
+import dev.osdiscretos.atlantidastore.model.StatusJogo;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -22,15 +23,12 @@ public class JogoRepository {
         return jpaRepository.findById(id).orElse(null);
     }
 
-    public List<Jogo> findAll() {
-        return jpaRepository.findAllByOrderByDataCriacaoAsc();
+    public List<Jogo> findByStatusOrderByDataPublicacaoDesc(StatusJogo status) {
+        return jpaRepository.findByStatusOrderByDataPublicacaoDesc(status);
     }
 
-    public boolean existsByTituloIgnoreCase(String titulo) {
-        if (titulo == null) {
-            return false;
-        }
-        return jpaRepository.existsByTituloIgnoreCase(titulo);
+    public List<Jogo> findByDesenvolvedorIdOrderByDataPublicacaoDesc(UUID desenvolvedorId) {
+        return jpaRepository.findByDesenvolvedor_IdOrderByDataPublicacaoDesc(desenvolvedorId);
     }
 
     public void deleteById(UUID id) {

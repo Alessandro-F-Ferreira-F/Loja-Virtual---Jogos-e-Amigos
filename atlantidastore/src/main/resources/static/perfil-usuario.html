@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Atlantida Store</title>
+    <title>Perfil do Desenvolvedor - Atlantida Store</title>
     <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
@@ -21,10 +21,16 @@
     </header>
 
     <main class="container">
-        <section class="page-title">
+        <section class="profile-hero">
             <div>
-                <h1>Feed de jogos</h1>
-                <p id="usuarioLogado">Carregando sessão...</p>
+                <h1 id="nomeDesenvolvedor">Desenvolvedor</h1>
+                <p id="perfilResumo">Carregando perfil...</p>
+            </div>
+            <div class="profile-stats">
+                <div>
+                    <strong id="totalPublicados">0</strong>
+                    <span>jogos publicados</span>
+                </div>
             </div>
             <p id="mensagem" class="mensagem" role="status"></p>
         </section>
@@ -32,17 +38,16 @@
         <section class="panel">
             <div class="header">
                 <div>
-                    <h2>Publicados recentemente</h2>
-                    <p>Jogos ordenados pela data de publicação.</p>
+                    <h2>Publicações</h2>
+                    <p>Jogos publicados por este usuário.</p>
                 </div>
             </div>
-
-            <div id="feedLista" class="game-grid">
+            <div id="jogosPublicados" class="game-grid">
                 <p class="empty">Carregando jogos...</p>
             </div>
         </section>
     </main>
 
-    <script src="/app.js"></script>
+    <script src="/perfil-usuario.js"></script>
 </body>
 </html>

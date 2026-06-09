@@ -1,6 +1,8 @@
-const usuarioLogado = document.getElementById("usuarioLogado");
+const nomeDesenvolvedor = document.getElementById("nomeDesenvolvedor");
+const perfilResumo = document.getElementById("perfilResumo");
+const totalPublicados = document.getElementById("totalPublicados");
 const mensagem = document.getElementById("mensagem");
-const feedLista = document.getElementById("feedLista");
+const jogosPublicados = document.getElementById("jogosPublicados");
 const logoutButton = document.getElementById("logoutButton");
 
 function mostrarMensagem(texto, erro = false) {
@@ -35,32 +37,6 @@ function escaparHtml(valor) {
         .replaceAll("'", "&#039;");
 }
 
-function renderizarFeed(jogos) {
-    if (jogos.length === 0) {
-        feedLista.innerHTML = '<p class="empty">Nenhum jogo publicado.</p>';
-        return;
-    }
-
-    feedLista.innerHTML = jogos.map((jogo) => `
-        <article class="game-card">
-            ${jogo.imagemCapa ? `<img class="game-cover" src="${escaparHtml(jogo.imagemCapa)}" alt="Capa de ${escaparHtml(jogo.nome)}">` : '<div class="game-cover placeholder">Sem capa</div>'}
-            <div class="game-body">
-                <div class="game-heading">
-                    <h3>${escaparHtml(jogo.nome)}</h3>
-                    <strong>${formatarPreco(jogo.preco)}</strong>
-                </div>
-                <p>${escaparHtml(jogo.descricao)}</p>
-                <div class="game-meta">
-                    <span>${escaparHtml(jogo.tags || "Sem tags")}</span>
-                    <a class="publisher-link" href="/perfil-usuario?id=${jogo.desenvolvedorId}">${escaparHtml(jogo.desenvolvedorNome || "Desenvolvedor")}</a>
-                    <span>${formatarData(jogo.dataPublicacao)}</span>
-                </div>
-                <button type="button" data-add-game-id="${jogo.id}">Adicionar à biblioteca</button>
-            </div>
-        </article>
-    `).join("");
-}
-
 async function fetchJson(url, options = {}) {
     const resposta = await fetch(url, options);
 
@@ -81,20 +57,48 @@ async function fetchJson(url, options = {}) {
     return resposta.json();
 }
 
-async function carregarSessao() {
-    const usuario = await fetchJson("/api/auth/me");
-
-    if (usuario) {
-        usuarioLogado.textContent = `Logado como ${usuario.nome} (${usuario.email})`;
+function renderizarJogos(jogos) {
+    if (!jogos || jogos.length === 0) {
+        jogosPublicados.innerHTML = '<p class="empty">Este usuário ainda não publicou jogos.</p>';
+        return;
     }
+
+    jogosPublicados.innerHTML = jogos.map((jogo) => `
+        <article class="game-card">
+            ${jogo.imagemCapa ? `<img class="game-cover" src="${escaparHtml(jogo.imagemCapa)}" alt="Capa de ${escaparHtml(jogo.nome)}">` : '<div class="game-cover placeholder">Sem capa</div>'}
+            <div class="game-body">
+                <div class="game-heading">
+                    <h3>${escaparHtml(jogo.nome)}</h3>
+                    <strong>${formatarPreco(jogo.preco)}</strong>
+                </div>
+                <p>${escaparHtml(jogo.descricao)}</p>
+                <div class="game-meta">
+                    <span>${escaparHtml(jogo.tags || "Sem tags")}</span>
+                    <span>${formatarData(jogo.dataPublicacao)}</span>
+                </div>
+                <button type="button" data-add-game-id="${jogo.id}">Adicionar à biblioteca</button>
+            </div>
+        </article>
+    `).join("");
 }
 
-async function carregarFeed() {
-    const jogos = await fetchJson("/api/jogos/feed");
+async function carregarPerfilPublico() {
+    const usuarioId = new URLSearchParams(window.location.search).get("id");
 
-    if (jogos) {
-        renderizarFeed(jogos);
+    if (!usuarioId) {
+        throw new Error("Perfil de usuário não informado.");
     }
+
+    const perfil = await fetchJson(`/api/usuarios/${usuarioId}/perfil-publico`);
+
+    if (!perfil) {
+        return;
+    }
+
+    nomeDesenvolvedor.textContent = perfil.nome;
+    perfilResumo.textContent = `Publicando na plataforma desde ${formatarData(perfil.dataCriacao)}.`;
+    totalPublicados.textContent = perfil.jogosPublicados?.length ?? 0;
+    renderizarJogos(perfil.jogosPublicados);
 }
 
 async function adicionarBiblioteca(id) {
@@ -105,15 +109,7 @@ async function adicionarBiblioteca(id) {
     mostrarMensagem("Jogo adicionado à biblioteca.");
 }
 
-logoutButton.addEventListener("click", async () => {
-    await fetch("/api/auth/logout", {
-        method: "POST"
-    });
-
-    window.location.href = "/login";
-});
-
-feedLista.addEventListener("click", async (event) => {
+jogosPublicados.addEventListener("click", async (event) => {
     if (!event.target.matches("button[data-add-game-id]")) {
         return;
     }
@@ -125,7 +121,12 @@ feedLista.addEventListener("click", async (event) => {
     }
 });
 
-Promise.all([
-    carregarSessao(),
-    carregarFeed()
-]).catch((error) => mostrarMensagem(error.message, true));
+logoutButton.addEventListener("click", async () => {
+    await fetch("/api/auth/logout", {
+        method: "POST"
+    });
+
+    window.location.href = "/login";
+});
+
+carregarPerfilPublico().catch((error) => mostrarMensagem(error.message, true));

@@ -19,4 +19,24 @@ public class PaginaController {
     public String cadastro() {
         return "forward:/cadastro.html";
     }
+
+    @GetMapping("/perfil")
+    public String perfil() {
+        return "forward:/perfil.html";
+    }
+
+    @GetMapping("/biblioteca")
+    public String biblioteca() {
+        return "forward:/biblioteca.html";
+    }
+
+    @GetMapping("/publicar-jogo")
+    public String publicarJogo() {
+        return "forward:/publicar-jogo.html";
+    }
+
+    @GetMapping("/perfil-usuario")
+    public String perfilUsuario() {
+        return "forward:/perfil-usuario.html";
+    }
 }

@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Publicar Jogo - Atlantida Store</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <header class="topbar">
+        <div class="topbar-inner">
+            <a class="brand" href="/">Atlantida Store</a>
+            <nav class="nav">
+                <a href="/">Feed</a>
+                <a href="/perfil">Perfil</a>
+                <a href="/biblioteca">Minha Biblioteca</a>
+                <a class="button small" href="/publicar-jogo">Publicar Jogo</a>
+                <button class="danger small" id="logoutButton" type="button">Sair</button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="page-title">
+            <div>
+                <h1>Publicar Jogo</h1>
+                <p id="usuarioLogado">Carregando sessão...</p>
+            </div>
+            <p id="mensagem" class="mensagem" role="status"></p>
+        </section>
+
+        <section class="panel">
+            <form id="jogoForm" class="form publish-form">
+                <label>
+                    Nome
+                    <input id="jogoNome" name="nome" type="text" required>
+                </label>
+
+                <label>
+                    Preço
+                    <input id="jogoPreco" name="preco" type="number" min="0" step="0.01" required>
+                </label>
+
+                <label class="span-2">
+                    Tags
+                    <input id="jogoTags" name="tags" type="text" placeholder="Ação, RPG, Indie">
+                </label>
+
+                <label class="span-2">
+                    Capa
+                    <input id="jogoImagem" name="imagem" type="file" accept="image/*">
+                </label>
+
+                <div class="cover-preview span-2">
+                    <img id="imagemPreview" alt="Preview da capa">
+                    <span id="previewPlaceholder">Sem capa selecionada</span>
+                </div>
+
+                <label class="span-2">
+                    Descrição
+                    <textarea id="jogoDescricao" name="descricao" rows="4" required></textarea>
+                </label>
+
+                <div class="form-actions span-2">
+                    <a class="button secondary" href="/">Cancelar</a>
+                    <button type="submit">Publicar jogo</button>
+                </div>
+            </form>
+        </section>
+    </main>
+
+    <script src="/publicar-jogo.js"></script>
+</body>
+</html>
