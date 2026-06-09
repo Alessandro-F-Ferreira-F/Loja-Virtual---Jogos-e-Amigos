@@ -6,7 +6,10 @@ const jogoForm = document.getElementById("jogoForm");
 const jogoTituloInput = document.getElementById("jogoTitulo");
 const jogoDescricaoInput = document.getElementById("jogoDescricao");
 const jogoPrecoInput = document.getElementById("jogoPreco");
-const jogoCategoriasInput = document.getElementById("jogoCategorias");
+const jogoCategoriasSelect = document.getElementById("jogoCategoriasSelect");
+const jogoCategoriasGatilho = jogoCategoriasSelect.querySelector(".multi-select-trigger");
+const jogoCategoriasValor = jogoCategoriasSelect.querySelector(".multi-select-value");
+const jogoCategoriasDropdown = jogoCategoriasSelect.querySelector(".multi-select-dropdown");
 const jogoDownloadUrlInput = document.getElementById("jogoDownloadUrl");
 const imprimirButton = document.getElementById("imprimirButton");
 const logoutButton = document.getElementById("logoutButton");
@@ -127,13 +130,54 @@ async function carregarJogos() {
     }
 }
 
+function getCategoriasSelected() {
+    return Array.from(jogoCategoriasDropdown.querySelectorAll("input[type=checkbox]:checked"))
+        .map((cb) => cb.value);
+}
+
+function atualizarLabelCategorias() {
+    const selecionadas = getCategoriasSelected();
+    if (selecionadas.length === 0) {
+        jogoCategoriasValor.textContent = "Selecione as categorias";
+        jogoCategoriasValor.classList.remove("has-selection");
+    } else {
+        jogoCategoriasValor.textContent = selecionadas.join(", ");
+        jogoCategoriasValor.classList.add("has-selection");
+    }
+}
+
+function fecharCategorias() {
+    jogoCategoriasSelect.classList.remove("open");
+    jogoCategoriasGatilho.setAttribute("aria-expanded", "false");
+}
+
+jogoCategoriasGatilho.addEventListener("click", (event) => {
+    event.stopPropagation();
+    const aberto = jogoCategoriasSelect.classList.toggle("open");
+    jogoCategoriasGatilho.setAttribute("aria-expanded", String(aberto));
+});
+
+jogoCategoriasDropdown.addEventListener("click", (event) => {
+    const opcao = event.target.closest(".multi-select-option");
+    if (!opcao) return;
+    const checkbox = opcao.querySelector("input[type=checkbox]");
+    if (event.target !== checkbox) {
+        checkbox.checked = !checkbox.checked;
+    }
+    atualizarLabelCategorias();
+    event.stopPropagation();
+});
+
+document.addEventListener("click", fecharCategorias);
+
+document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") fecharCategorias();
+});
+
 async function publicarJogo(event) {
     event.preventDefault();
 
-    const categorias = jogoCategoriasInput.value
-        .split(",")
-        .map((categoria) => categoria.trim())
-        .filter(Boolean);
+    const categorias = getCategoriasSelected();
 
     await fetchJson("/api/jogos", {
         method: "POST",
@@ -150,6 +194,8 @@ async function publicarJogo(event) {
     });
 
     jogoForm.reset();
+    jogoCategoriasDropdown.querySelectorAll("input[type=checkbox]").forEach((cb) => { cb.checked = false; });
+    atualizarLabelCategorias();
     mostrarMensagem("Jogo publicado com sucesso.");
     await carregarJogos();
 }

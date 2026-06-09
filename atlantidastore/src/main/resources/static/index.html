@@ -44,7 +44,30 @@
 
                 <label>
                     Categorias
-                    <input id="jogoCategorias" name="categorias" type="text" placeholder="RPG, Aventura">
+                    <div class="multi-select" id="jogoCategoriasSelect">
+                        <button type="button" class="multi-select-trigger" aria-haspopup="listbox" aria-expanded="false">
+                            <span class="multi-select-value">Selecione as categorias</span>
+                            <span class="multi-select-arrow">▾</span>
+                        </button>
+                        <div class="multi-select-dropdown">
+                            <div class="multi-select-option"><input type="checkbox" value="RPG"><span>RPG</span></div>
+                            <div class="multi-select-option"><input type="checkbox" value="Ação"><span>Ação</span></div>
+                            <div class="multi-select-option"><input type="checkbox" value="Aventura"><span>Aventura</span></div>
+                            <div class="multi-select-option"><input type="checkbox" value="FPS"><span>FPS</span></div>
+                            <div class="multi-select-option"><input type="checkbox" value="RTS"><span>RTS</span></div>
+                            <div class="multi-select-option"><input type="checkbox" value="Esportes"><span>Esportes</span></div>
+                            <div class="multi-select-option"><input type="checkbox" value="Corrida"><span>Corrida</span></div>
+                            <div class="multi-select-option"><input type="checkbox" value="Luta"><span>Luta</span></div>
+                            <div class="multi-select-option"><input type="checkbox" value="Puzzle"><span>Puzzle</span></div>
+                            <div class="multi-select-option"><input type="checkbox" value="Estratégia"><span>Estratégia</span></div>
+                            <div class="multi-select-option"><input type="checkbox" value="Simulação"><span>Simulação</span></div>
+                            <div class="multi-select-option"><input type="checkbox" value="Terror"><span>Terror</span></div>
+                            <div class="multi-select-option"><input type="checkbox" value="Plataforma"><span>Plataforma</span></div>
+                            <div class="multi-select-option"><input type="checkbox" value="MOBA"><span>MOBA</span></div>
+                            <div class="multi-select-option"><input type="checkbox" value="MMO"><span>MMO</span></div>
+                            <div class="multi-select-option"><input type="checkbox" value="Sandbox"><span>Sandbox</span></div>
+                        </div>
+                    </div>
                 </label>
 
                 <label>
