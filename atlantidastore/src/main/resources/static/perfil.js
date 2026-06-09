@@ -15,6 +15,20 @@ function mostrarMensagem(texto, erro = false) {
     mensagem.classList.toggle("erro", erro);
 }
 
+async function extrairMensagemErro(resposta, fallback) {
+    const texto = await resposta.text().catch(() => "");
+
+    if (!texto) {
+        return fallback;
+    }
+
+    try {
+        return JSON.parse(texto).mensagem || fallback;
+    } catch {
+        return texto;
+    }
+}
+
 function formatarData(valor) {
     if (!valor) {
         return "-";
@@ -51,8 +65,7 @@ async function fetchJson(url, options = {}) {
     }
 
     if (!resposta.ok) {
-        const erro = await resposta.json().catch(() => ({}));
-        throw new Error(erro.mensagem || "Não foi possível concluir a operação.");
+        throw new Error(await extrairMensagemErro(resposta, "Não foi possível concluir a operação."));
     }
 
     if (resposta.status === 204) {
@@ -70,7 +83,7 @@ function renderizarLista(elemento, jogos, vazio) {
 
     elemento.innerHTML = jogos.map((jogo) => `
         <article class="compact-item">
-            ${jogo.imagemCapa ? `<img src="${escaparHtml(jogo.imagemCapa)}" alt="Capa de ${escaparHtml(jogo.nome)}">` : '<div class="mini-cover">Sem capa</div>'}
+            ${jogo.imagemCapaUrl ? `<img src="${escaparHtml(jogo.imagemCapaUrl)}" alt="Capa de ${escaparHtml(jogo.nome)}">` : '<div class="mini-cover">Sem capa</div>'}
             <div>
                 <h3>${escaparHtml(jogo.nome)}</h3>
                 <p>${formatarPreco(jogo.preco)} · ${escaparHtml(jogo.tags || "Sem tags")}</p>

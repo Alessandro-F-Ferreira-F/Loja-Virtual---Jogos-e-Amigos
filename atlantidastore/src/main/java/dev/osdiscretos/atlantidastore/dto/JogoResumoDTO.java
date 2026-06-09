@@ -17,7 +17,7 @@ public record JogoResumoDTO(
     String desenvolvedorNome,
     LocalDateTime dataPublicacao,
     StatusJogo status,
-    String imagemCapa
+    String imagemCapaUrl
 ) {
     public static JogoResumoDTO from(Jogo jogo) {
         return new JogoResumoDTO(

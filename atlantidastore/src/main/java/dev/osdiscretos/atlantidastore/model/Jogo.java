@@ -98,4 +98,8 @@ public class Jogo {
     public String getImagemCapa() {
         return imagemCapa;
     }
+
+    public void setImagemCapa(String imagemCapa) {
+        this.imagemCapa = imagemCapa;
+    }
 }

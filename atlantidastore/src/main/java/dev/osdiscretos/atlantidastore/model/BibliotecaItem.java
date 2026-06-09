@@ -4,10 +4,10 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -15,9 +15,10 @@ import java.util.UUID;
 @Entity
 @Table(
     name = "biblioteca_itens",
-    uniqueConstraints = @UniqueConstraint(
+    indexes = @Index(
         name = "uk_biblioteca_usuario_jogo",
-        columnNames = {"usuario_id", "jogo_id"}
+        columnList = "usuario_id,jogo_id",
+        unique = true
     )
 )
 public class BibliotecaItem {

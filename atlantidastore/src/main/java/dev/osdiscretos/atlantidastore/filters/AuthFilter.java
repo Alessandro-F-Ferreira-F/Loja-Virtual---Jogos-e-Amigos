@@ -58,6 +58,7 @@ public class AuthFilter extends OncePerRequestFilter {
                 || path.equals("/cadastro.html")
                 || path.equals("/api/jogos/feed")
                 || path.matches("/api/jogos/[0-9a-fA-F\\-]{36}")
+                || path.matches("/api/jogos/[0-9a-fA-F\\-]{36}/capa")
                 || path.matches("/api/usuarios/[0-9a-fA-F\\-]{36}/perfil-publico")
                 || path.equals("/error");
         }

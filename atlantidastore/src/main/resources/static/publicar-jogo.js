@@ -10,11 +10,27 @@ const imagemPreview = document.getElementById("imagemPreview");
 const previewPlaceholder = document.getElementById("previewPlaceholder");
 const logoutButton = document.getElementById("logoutButton");
 
+const MAX_IMAGE_BYTES = 2 * 1024 * 1024;
+const ALLOWED_IMAGE_TYPES = new Set(["image/png", "image/jpeg", "image/gif", "image/webp"]);
 let imagemCapa = null;
 
 function mostrarMensagem(texto, erro = false) {
     mensagem.textContent = texto;
     mensagem.classList.toggle("erro", erro);
+}
+
+async function extrairMensagemErro(resposta, fallback) {
+    const texto = await resposta.text().catch(() => "");
+
+    if (!texto) {
+        return fallback;
+    }
+
+    try {
+        return JSON.parse(texto).mensagem || fallback;
+    } catch {
+        return texto;
+    }
 }
 
 async function fetchJson(url, options = {}) {
@@ -26,8 +42,7 @@ async function fetchJson(url, options = {}) {
     }
 
     if (!resposta.ok) {
-        const erro = await resposta.json().catch(() => ({}));
-        throw new Error(erro.mensagem || "Não foi possível concluir a operação.");
+        throw new Error(await extrairMensagemErro(resposta, "Não foi possível concluir a operação."));
     }
 
     if (resposta.status === 204) {
@@ -61,6 +76,24 @@ jogoImagemInput.addEventListener("change", async () => {
         imagemCapa = null;
         imagemPreview.removeAttribute("src");
         previewPlaceholder.hidden = false;
+        return;
+    }
+
+    if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
+        jogoImagemInput.value = "";
+        imagemCapa = null;
+        imagemPreview.removeAttribute("src");
+        previewPlaceholder.hidden = false;
+        mostrarMensagem("A capa deve ser PNG, JPEG, GIF ou WebP.", true);
+        return;
+    }
+
+    if (file.size > MAX_IMAGE_BYTES) {
+        jogoImagemInput.value = "";
+        imagemCapa = null;
+        imagemPreview.removeAttribute("src");
+        previewPlaceholder.hidden = false;
+        mostrarMensagem("A capa deve ter no máximo 2 MB.", true);
         return;
     }
 

@@ -10,6 +10,20 @@ function mostrarMensagem(texto, erro = false) {
     mensagem.classList.toggle("erro", erro);
 }
 
+async function extrairMensagemErro(resposta, fallback) {
+    const texto = await resposta.text().catch(() => "");
+
+    if (!texto) {
+        return fallback;
+    }
+
+    try {
+        return JSON.parse(texto).mensagem || fallback;
+    } catch {
+        return texto;
+    }
+}
+
 function formatarData(valor) {
     if (!valor) {
         return "-";
@@ -46,8 +60,7 @@ async function fetchJson(url, options = {}) {
     }
 
     if (!resposta.ok) {
-        const erro = await resposta.json().catch(() => ({}));
-        throw new Error(erro.mensagem || "Não foi possível concluir a operação.");
+        throw new Error(await extrairMensagemErro(resposta, "Não foi possível concluir a operação."));
     }
 
     if (resposta.status === 204) {
@@ -65,7 +78,7 @@ function renderizarJogos(jogos) {
 
     jogosPublicados.innerHTML = jogos.map((jogo) => `
         <article class="game-card">
-            ${jogo.imagemCapa ? `<img class="game-cover" src="${escaparHtml(jogo.imagemCapa)}" alt="Capa de ${escaparHtml(jogo.nome)}">` : '<div class="game-cover placeholder">Sem capa</div>'}
+            ${jogo.imagemCapaUrl ? `<img class="game-cover" src="${escaparHtml(jogo.imagemCapaUrl)}" alt="Capa de ${escaparHtml(jogo.nome)}">` : '<div class="game-cover placeholder">Sem capa</div>'}
             <div class="game-body">
                 <div class="game-heading">
                     <h3>${escaparHtml(jogo.nome)}</h3>
@@ -129,4 +142,7 @@ logoutButton.addEventListener("click", async () => {
     window.location.href = "/login";
 });
 
-carregarPerfilPublico().catch((error) => mostrarMensagem(error.message, true));
+carregarPerfilPublico().catch((error) => {
+    jogosPublicados.innerHTML = '<p class="empty">Não foi possível carregar este perfil.</p>';
+    mostrarMensagem(error.message, true);
+});

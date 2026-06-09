@@ -20,10 +20,16 @@ import java.util.UUID;
 public class JogoService {
     private final JogoRepository jogoRepository;
     private final UsuarioRepository usuarioRepository;
+    private final GameImageStorageService gameImageStorageService;
 
-    public JogoService(JogoRepository jogoRepository, UsuarioRepository usuarioRepository) {
+    public JogoService(
+        JogoRepository jogoRepository,
+        UsuarioRepository usuarioRepository,
+        GameImageStorageService gameImageStorageService
+    ) {
         this.jogoRepository = jogoRepository;
         this.usuarioRepository = usuarioRepository;
+        this.gameImageStorageService = gameImageStorageService;
     }
 
     @Transactional
@@ -40,7 +46,6 @@ public class JogoService {
         String descricao = normalize(request.descricao());
         BigDecimal preco = request.preco();
         String tags = normalize(request.tags());
-        String imagemCapa = normalizeImagemCapa(request.imagemCapa());
 
         if (nome.isBlank()) {
             throw new IllegalArgumentException("Nome do jogo é obrigatório");
@@ -70,20 +75,22 @@ public class JogoService {
             preco,
             tags,
             desenvolvedor,
-            imagemCapa
+            null
         );
+        jogo.setImagemCapa(gameImageStorageService.salvarDataUrl(request.imagemCapa(), jogo.getId()));
 
         return JogoResponseDTO.from(jogoRepository.save(jogo));
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public List<JogoResumoDTO> listarFeed() {
         return jogoRepository.findByStatusOrderByDataPublicacaoDesc(StatusJogo.PUBLICADO).stream()
+            .map(this::migrarCapaLegadaSeNecessario)
             .map(JogoResumoDTO::from)
             .toList();
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public JogoResponseDTO buscarDetalhes(UUID jogoId) {
         Jogo jogo = jogoRepository.findById(jogoId);
 
@@ -91,22 +98,50 @@ public class JogoService {
             throw new NoSuchElementException("Jogo não encontrado");
         }
 
-        return JogoResponseDTO.from(jogo);
+        return JogoResponseDTO.from(migrarCapaLegadaSeNecessario(jogo));
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public List<JogoResumoDTO> listarJogosPublicadosPorUsuario(UUID usuarioId) {
         return jogoRepository.findByDesenvolvedorIdOrderByDataPublicacaoDesc(usuarioId).stream()
+            .map(this::migrarCapaLegadaSeNecessario)
             .map(JogoResumoDTO::from)
             .toList();
+    }
+
+    @Transactional
+    public GameImageStorageService.CapaJogo buscarCapa(UUID jogoId) {
+        Jogo jogo = jogoRepository.findById(jogoId);
+
+        if (jogo == null) {
+            throw new NoSuchElementException("Jogo não encontrado");
+        }
+
+        String imagemCapa = jogo.getImagemCapa();
+
+        if (imagemCapa == null || imagemCapa.isBlank()) {
+            throw new NoSuchElementException("Capa do jogo não encontrada");
+        }
+
+        Jogo jogoMigrado = migrarCapaLegadaSeNecessario(jogo);
+        return gameImageStorageService.buscarPorUrl(jogoMigrado.getImagemCapa());
     }
 
     private String normalize(String value) {
         return value == null ? "" : value.trim();
     }
 
-    private String normalizeImagemCapa(String value) {
-        String normalized = normalize(value);
-        return normalized.isBlank() ? null : normalized;
+    private Jogo migrarCapaLegadaSeNecessario(Jogo jogo) {
+        if (!gameImageStorageService.isDataUrl(jogo.getImagemCapa())) {
+            return jogo;
+        }
+
+        try {
+            jogo.setImagemCapa(gameImageStorageService.salvarDataUrl(jogo.getImagemCapa(), jogo.getId()));
+        } catch (RuntimeException exception) {
+            jogo.setImagemCapa(null);
+        }
+
+        return jogoRepository.save(jogo);
     }
 }

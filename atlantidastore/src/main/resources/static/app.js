@@ -36,6 +36,10 @@ function escaparHtml(valor) {
 }
 
 function renderizarFeed(jogos) {
+    if (!Array.isArray(jogos)) {
+        throw new Error("Resposta inválida ao carregar o feed.");
+    }
+
     if (jogos.length === 0) {
         feedLista.innerHTML = '<p class="empty">Nenhum jogo publicado.</p>';
         return;
@@ -43,7 +47,7 @@ function renderizarFeed(jogos) {
 
     feedLista.innerHTML = jogos.map((jogo) => `
         <article class="game-card">
-            ${jogo.imagemCapa ? `<img class="game-cover" src="${escaparHtml(jogo.imagemCapa)}" alt="Capa de ${escaparHtml(jogo.nome)}">` : '<div class="game-cover placeholder">Sem capa</div>'}
+            ${jogo.imagemCapaUrl ? `<img class="game-cover" src="${escaparHtml(jogo.imagemCapaUrl)}" alt="Capa de ${escaparHtml(jogo.nome)}">` : '<div class="game-cover placeholder">Sem capa</div>'}
             <div class="game-body">
                 <div class="game-heading">
                     <h3>${escaparHtml(jogo.nome)}</h3>
@@ -70,7 +74,15 @@ async function fetchJson(url, options = {}) {
     }
 
     if (!resposta.ok) {
-        const erro = await resposta.json().catch(() => ({}));
+        const texto = await resposta.text().catch(() => "");
+        let erro = {};
+
+        try {
+            erro = texto ? JSON.parse(texto) : {};
+        } catch {
+            erro = { mensagem: texto };
+        }
+
         throw new Error(erro.mensagem || "Não foi possível concluir a operação.");
     }
 
@@ -125,7 +137,8 @@ feedLista.addEventListener("click", async (event) => {
     }
 });
 
-Promise.all([
-    carregarSessao(),
-    carregarFeed()
-]).catch((error) => mostrarMensagem(error.message, true));
+carregarSessao().catch((error) => mostrarMensagem(error.message, true));
+carregarFeed().catch((error) => {
+    feedLista.innerHTML = '<p class="empty">Não foi possível carregar os jogos.</p>';
+    mostrarMensagem(error.message, true);
+});

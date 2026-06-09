@@ -23,6 +23,10 @@ public class JogoRepository {
         return jpaRepository.findById(id).orElse(null);
     }
 
+    public List<Jogo> findAll() {
+        return jpaRepository.findAll();
+    }
+
     public List<Jogo> findByStatusOrderByDataPublicacaoDesc(StatusJogo status) {
         return jpaRepository.findByStatusOrderByDataPublicacaoDesc(status);
     }

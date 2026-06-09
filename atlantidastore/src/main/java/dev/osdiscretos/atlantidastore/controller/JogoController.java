@@ -7,8 +7,10 @@ import dev.osdiscretos.atlantidastore.dto.JogoResumoDTO;
 import dev.osdiscretos.atlantidastore.dto.PublicarJogoRequestDTO;
 import dev.osdiscretos.atlantidastore.model.Usuario;
 import dev.osdiscretos.atlantidastore.service.AuthService;
+import dev.osdiscretos.atlantidastore.service.GameImageStorageService;
 import dev.osdiscretos.atlantidastore.service.JogoService;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -43,6 +45,16 @@ public class JogoController {
     @GetMapping("/{id}")
     public ResponseEntity<JogoResponseDTO> buscarDetalhes(@PathVariable UUID id) {
         return ResponseEntity.ok(jogoService.buscarDetalhes(id));
+    }
+
+    @GetMapping("/{id}/capa")
+    public ResponseEntity<byte[]> buscarCapa(@PathVariable UUID id) {
+        GameImageStorageService.CapaJogo capa = jogoService.buscarCapa(id);
+
+        return ResponseEntity
+            .ok()
+            .contentType(MediaType.parseMediaType(capa.contentType()))
+            .body(capa.bytes());
     }
 
     @PostMapping
