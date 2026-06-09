@@ -14,6 +14,46 @@ const jogoDownloadUrlInput = document.getElementById("jogoDownloadUrl");
 const imprimirButton = document.getElementById("imprimirButton");
 const logoutButton = document.getElementById("logoutButton");
 
+let digitosCentavos = "";
+
+function atualizarExibicaoPreco() {
+    if (!digitosCentavos) {
+        jogoPrecoInput.value = "";
+        return;
+    }
+    const centavos = parseInt(digitosCentavos, 10);
+    jogoPrecoInput.value = new Intl.NumberFormat("pt-BR", {
+        style: "currency",
+        currency: "BRL"
+    }).format(centavos / 100);
+}
+
+jogoPrecoInput.addEventListener("keydown", (event) => {
+    if (event.ctrlKey || event.metaKey || event.altKey) return;
+    if (/^\d$/.test(event.key)) {
+        event.preventDefault();
+        if (digitosCentavos.length < 10) {
+            digitosCentavos += event.key;
+        }
+        atualizarExibicaoPreco();
+    } else if (event.key === "Backspace") {
+        event.preventDefault();
+        digitosCentavos = digitosCentavos.slice(0, -1);
+        atualizarExibicaoPreco();
+    } else if (event.key !== "Tab" && event.key !== "Enter") {
+        event.preventDefault();
+    }
+});
+
+jogoPrecoInput.addEventListener("paste", (event) => {
+    event.preventDefault();
+    const colado = (event.clipboardData || window.clipboardData).getData("text");
+    for (const c of colado.replace(/\D/g, "")) {
+        if (digitosCentavos.length < 10) digitosCentavos += c;
+    }
+    atualizarExibicaoPreco();
+});
+
 function mostrarMensagem(texto, erro = false) {
     mensagem.textContent = texto;
     mensagem.classList.toggle("erro", erro);
@@ -187,13 +227,14 @@ async function publicarJogo(event) {
         body: JSON.stringify({
             titulo: jogoTituloInput.value,
             descricao: jogoDescricaoInput.value,
-            preco: jogoPrecoInput.value,
+            preco: parseInt(digitosCentavos || "0", 10) / 100,
             categorias,
             downloadUrl: jogoDownloadUrlInput.value
         })
     });
 
     jogoForm.reset();
+    digitosCentavos = "";
     jogoCategoriasDropdown.querySelectorAll("input[type=checkbox]").forEach((cb) => { cb.checked = false; });
     atualizarLabelCategorias();
     mostrarMensagem("Jogo publicado com sucesso.");
