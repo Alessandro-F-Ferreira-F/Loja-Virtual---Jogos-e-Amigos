@@ -3,6 +3,7 @@ package dev.osdiscretos.atlantidastore.service;
 import dev.osdiscretos.atlantidastore.dto.RelacionamentoResponse;
 import dev.osdiscretos.atlantidastore.dto.SeguimentoResponse;
 import dev.osdiscretos.atlantidastore.dto.SolicitacaoSeguimentoResponse;
+import dev.osdiscretos.atlantidastore.model.Notificacao;
 import dev.osdiscretos.atlantidastore.model.Seguimento;
 import dev.osdiscretos.atlantidastore.model.SolicitacaoSeguimento;
 import dev.osdiscretos.atlantidastore.model.Usuario;
@@ -22,15 +23,18 @@ public class SocialService {
     private final SeguimentoRepository seguimentoRepository;
     private final SolicitacaoSeguimentoRepository solicitacaoRepository;
     private final UsuarioRepository usuarioRepository;
+    private final NotificacaoService notificacaoService;
 
     public SocialService(
         SeguimentoRepository seguimentoRepository,
         SolicitacaoSeguimentoRepository solicitacaoRepository,
-        UsuarioRepository usuarioRepository
+        UsuarioRepository usuarioRepository,
+        NotificacaoService notificacaoService
     ) {
         this.seguimentoRepository = seguimentoRepository;
         this.solicitacaoRepository = solicitacaoRepository;
         this.usuarioRepository = usuarioRepository;
+        this.notificacaoService = notificacaoService;
     }
 
     @Transactional
@@ -52,12 +56,18 @@ public class SocialService {
         if (alvo.isPerfilPrivado()) {
             SolicitacaoSeguimento solicitacao = new SolicitacaoSeguimento(me.getId(), alvoId);
             solicitacaoRepository.save(solicitacao);
-            return RelacionamentoResponse.pendente();
+            notificacaoService.criarNotificacao(
+                alvoId, me.getId(), Notificacao.Tipo.SOLICITACAO_SEGUIMENTO, solicitacao.getId()
+            );
+            return RelacionamentoResponse.dePendente();
         }
 
         Seguimento seguimento = new Seguimento(me.getId(), alvoId);
         seguimentoRepository.save(seguimento);
-        return RelacionamentoResponse.seguindo();
+        notificacaoService.criarNotificacao(
+            alvoId, me.getId(), Notificacao.Tipo.NOVO_SEGUIDOR, null
+        );
+        return RelacionamentoResponse.deSeguindo();
     }
 
     @Transactional
@@ -92,6 +102,10 @@ public class SocialService {
 
         Seguimento seguimento = new Seguimento(solicitacao.getSolicitanteId(), me.getId());
         seguimentoRepository.save(seguimento);
+
+        notificacaoService.criarNotificacao(
+            solicitacao.getSolicitanteId(), me.getId(), Notificacao.Tipo.SOLICITACAO_ACEITA, solicitacaoId
+        );
     }
 
     @Transactional
@@ -134,12 +148,12 @@ public class SocialService {
         buscarUsuario(alvoId);
 
         if (seguimentoRepository.existePar(me.getId(), alvoId)) {
-            return RelacionamentoResponse.seguindo();
+            return RelacionamentoResponse.deSeguindo();
         }
         if (solicitacaoRepository.existePendente(me.getId(), alvoId)) {
-            return RelacionamentoResponse.pendente();
+            return RelacionamentoResponse.dePendente();
         }
-        return RelacionamentoResponse.nenhum();
+        return RelacionamentoResponse.deNenhum();
     }
 
     public List<SolicitacaoSeguimentoResponse> listarSolicitacoesPendentes(Usuario me) {

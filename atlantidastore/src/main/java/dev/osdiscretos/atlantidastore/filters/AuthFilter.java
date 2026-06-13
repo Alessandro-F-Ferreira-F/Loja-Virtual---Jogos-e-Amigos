@@ -59,7 +59,9 @@ public class AuthFilter extends OncePerRequestFilter {
                 || path.equals("/login.js")
                 || path.equals("/cadastro.js")
                 || path.equals("/favicon.ico")
-                || path.equals("/error");
+                || path.equals("/error")
+                || path.equals("/api/jogos")
+                || path.startsWith("/api/jogos/");
         }
 
         if ("POST".equalsIgnoreCase(method)) {
