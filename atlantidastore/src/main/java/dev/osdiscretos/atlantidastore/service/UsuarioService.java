@@ -1,63 +1,102 @@
 package dev.osdiscretos.atlantidastore.service;
 
 
+import dev.osdiscretos.atlantidastore.auth.PasswordHasher;
 import dev.osdiscretos.atlantidastore.model.Usuario;
-import dev.osdiscretos.atlantidastore.dto.CadastrarUsuarioRequestDTO;
-import dev.osdiscretos.atlantidastore.dto.UsuarioResponse;
+import dev.osdiscretos.atlantidastore.repository.SessaoRepository;
 import dev.osdiscretos.atlantidastore.repository.UsuarioRepository;
+import dev.osdiscretos.atlantidastore.dto.CadastroRequestDTO;
+import dev.osdiscretos.atlantidastore.dto.UsuarioResponse;
+
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.ArrayList;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
 @Service
 public class UsuarioService {
     private final UsuarioRepository usuarioRepository;
+    private final SessaoRepository sessaoRepository;
+    private final PasswordHasher passwordHasher;
 
-    public UsuarioService(UsuarioRepository usuarioRepository) {
+    public UsuarioService(
+        UsuarioRepository usuarioRepository,
+        SessaoRepository sessaoRepository,
+        PasswordHasher passwordHasher
+    ) {
         this.usuarioRepository = usuarioRepository;
+        this.sessaoRepository = sessaoRepository;
+        this.passwordHasher = passwordHasher;
     }
 
-    public UsuarioResponse cadastrar(CadastrarUsuarioRequestDTO request) {
+
+    public UsuarioResponse register(CadastroRequestDTO request) {
         if (request == null) {
             throw new IllegalArgumentException("Dados do usuário são obrigatórios");
         }
 
-        String nome = request.nome();
-        String email = request.email();
+        String nome = normalize(request.nome());
+        String email = normalize(request.email()).toLowerCase();
+        String senha = request.senha();
 
-        if (nome == null || nome.isBlank()) {
+        if (nome.isBlank()) {
             throw new IllegalArgumentException("Nome é obrigatório");
         }
 
-        if (email == null || email.isBlank()) {
+        if (email.isBlank()) {
             throw new IllegalArgumentException("E-mail é obrigatório");
         }
 
-        String nomeNormalizado = nome.trim();
-        String emailNormalizado = email.trim();
+        if (!email.contains("@")) {
+            throw new IllegalArgumentException("E-mail inválido");
+        }
 
-        if (usuarioRepository.existsByEmailIgnoreCase(emailNormalizado)) {
+        if (senha == null || senha.length() < 6) {
+            throw new IllegalArgumentException("Senha deve ter pelo menos 6 caracteres");
+        }
+
+        if (usuarioRepository.isEmailRegistered(email)) {
             throw new IllegalArgumentException("E-mail já cadastrado");
         }
 
-        Usuario usuario = new Usuario(nomeNormalizado, emailNormalizado);
-        usuario = usuarioRepository.save(usuario);
+        String senhaHash = passwordHasher.hash(senha);
 
-        return UsuarioResponse.from(usuario);
+        Usuario user = new Usuario(
+            nome,
+            email,
+            senhaHash
+        );
+
+        Usuario saved = usuarioRepository.save(user);
+        return UsuarioResponse.from(saved);
     }
 
-    public List<UsuarioResponse> listar() {
-        return usuarioRepository.findAll().stream()
-            .map(UsuarioResponse::from)
-            .toList();
-    }
+    public List<UsuarioResponse> listAll() {
+        List<Usuario> users = usuarioRepository.listAll();
 
-    public void remover(UUID id) {
-        if (!usuarioRepository.existsById(id)) {
-            throw new NoSuchElementException("Usuário não encontrado");
+        List<UsuarioResponse> convertedList = new ArrayList<>();
+
+        for (Usuario user : users) {
+            UsuarioResponse response = UsuarioResponse.from(user);
+            convertedList.add(response);
         }
-        usuarioRepository.deleteById(id);
+        
+        return convertedList;
+    }
+
+    public void remove(UUID id) {
+        Usuario userToDelete = usuarioRepository.findByID(id);
+        if (userToDelete == null) {
+            throw new NoSuchElementException("Usuario não encontrado ");
+        }
+
+        usuarioRepository.removeByID(id);
+        sessaoRepository.removeByUsuarioId(id);
+    }
+
+    private String normalize(String value) {
+        return value == null ? "" : value.trim();
     }
 }

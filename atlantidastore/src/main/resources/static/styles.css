@@ -20,6 +20,10 @@ body {
     gap: 18px;
 }
 
+.container.narrow {
+    width: min(460px, calc(100% - 32px));
+}
+
 .panel {
     background: #ffffff;
     border: 1px solid #d7dde5;
@@ -55,11 +59,30 @@ h2 {
     color: #66788a;
 }
 
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
 .form {
     display: grid;
     grid-template-columns: 1fr 1fr auto;
     gap: 14px;
     align-items: end;
+}
+
+.form.single {
+    grid-template-columns: 1fr;
+}
+
+.form.game-form {
+    grid-template-columns: 1fr 180px;
+}
+
+.span-2 {
+    grid-column: span 2;
 }
 
 label {
@@ -68,16 +91,25 @@ label {
     font-weight: 700;
 }
 
-input {
+input,
+textarea {
     width: 100%;
-    height: 42px;
     border: 1px solid #b8c2cc;
     border-radius: 6px;
-    padding: 0 12px;
+    padding: 10px 12px;
     font: inherit;
 }
 
-input:focus {
+input {
+    height: 42px;
+}
+
+textarea {
+    resize: vertical;
+}
+
+input:focus,
+textarea:focus {
     outline: 3px solid #b8e0d2;
     border-color: #2f855a;
 }
@@ -94,15 +126,34 @@ button {
     cursor: pointer;
 }
 
+a {
+    color: #236f4e;
+    font-weight: 700;
+}
+
+a.button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 42px;
+    border-radius: 6px;
+    padding: 0 16px;
+    background: #236f4e;
+    color: #ffffff;
+    text-decoration: none;
+}
+
 button:hover {
     background: #1f5f44;
 }
 
-button.secondary {
+button.secondary,
+a.button.secondary {
     background: #243b53;
 }
 
-button.secondary:hover {
+button.secondary:hover,
+a.button.secondary:hover {
     background: #172a3a;
 }
 
@@ -123,6 +174,17 @@ button.danger:hover {
 
 .mensagem.erro {
     color: #b42318;
+}
+
+.footer-link {
+    margin-top: 16px;
+    color: #66788a;
+}
+
+.muted {
+    margin-top: 4px;
+    color: #66788a;
+    font-size: 14px;
 }
 
 .table-wrap {
@@ -147,7 +209,7 @@ th {
 }
 
 .acoes {
-    width: 120px;
+    width: 130px;
     text-align: right;
 }
 
@@ -175,7 +237,16 @@ td.acoes button {
         display: grid;
     }
 
+    .span-2 {
+        grid-column: span 1;
+    }
+
+    .actions {
+        justify-content: stretch;
+    }
+
     .header button,
+    .header .button,
     .form button {
         width: 100%;
     }
@@ -191,7 +262,7 @@ td.acoes button {
         margin: 0;
     }
 
-    .panel:first-child,
+    .no-print,
     .acoes,
     td.acoes {
         display: none;
