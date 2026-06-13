@@ -23,7 +23,11 @@ public class Usuario {
     @Column(nullable = false)
     private LocalDateTime dataCriacao;
 
-    protected Usuario() {}
+    @Column(nullable = false)
+    private boolean perfilPrivado = false;
+
+    protected Usuario() {
+    }
 
     public Usuario(String nome, String email, String senhaHash) {
         this.id = UUID.randomUUID();
@@ -60,4 +64,17 @@ public class Usuario {
     public LocalDateTime getDataCriacao() {
         return dataCriacao;
     }
+
+    public boolean isPerfilPrivado() {
+        return perfilPrivado;
+    }
+
+    public void tornarPrivado() {
+        this.perfilPrivado = true;
+    }
+
+    public void tornarPublico() {
+        this.perfilPrivado = false;
+    }
 }
+
