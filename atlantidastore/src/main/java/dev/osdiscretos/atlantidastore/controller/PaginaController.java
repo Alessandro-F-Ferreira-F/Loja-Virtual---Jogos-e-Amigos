@@ -44,4 +44,9 @@ public class PaginaController {
     public String listaDesejos() {
         return "forward:/lista-desejos.html";
     }
+
+    @GetMapping("/notificacoes")
+    public String notificacoes() {
+        return "forward:/notificacoes.html";
+    }
 }

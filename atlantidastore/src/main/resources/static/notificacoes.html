@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Notificações - Atlantida Store</title>
+    <link rel="stylesheet" href="/styles.css?v=3">
+</head>
+<body>
+    <header class="topbar">
+        <div class="topbar-inner">
+            <a class="brand" href="/">Atlantida Store</a>
+            <nav class="nav">
+                <a href="/">Feed</a>
+                <a href="/perfil">Perfil</a>
+                <a href="/biblioteca">Minha Biblioteca</a>
+                <a href="/lista-desejos">Lista de desejos</a>
+                <a href="/notificacoes">Notificações <span id="badgeNav" class="notif-badge" hidden>0</span></a>
+                <a class="button small" href="/publicar-jogo">Publicar Jogo</a>
+                <button class="danger small" id="logoutButton" type="button">Sair</button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="page-title">
+            <div>
+                <h1>Notificações</h1>
+                <p id="notifResumo">Carregando notificações...</p>
+            </div>
+            <div class="actions">
+                <button id="marcarTodasLidas" class="secondary small" type="button">Marcar todas como lidas</button>
+            </div>
+        </section>
+
+        <section class="panel">
+            <div class="header">
+                <div>
+                    <h2>Solicitações de seguimento</h2>
+                    <p>Pessoas que pediram para seguir seu perfil privado.</p>
+                </div>
+            </div>
+            <div id="listaSolicitacoes" class="notif-list">
+                <p class="empty">Carregando...</p>
+            </div>
+        </section>
+
+        <section class="panel">
+            <div class="header">
+                <div>
+                    <h2>Todas as notificações</h2>
+                    <p>Atividade recente na sua conta.</p>
+                </div>
+            </div>
+            <div id="listaNotificacoes" class="notif-list">
+                <p class="empty">Carregando...</p>
+            </div>
+        </section>
+
+        <p id="mensagem" class="mensagem" role="status"></p>
+    </main>
+
+    <script src="/notificacoes.js?v=1"></script>
+</body>
+</html>
