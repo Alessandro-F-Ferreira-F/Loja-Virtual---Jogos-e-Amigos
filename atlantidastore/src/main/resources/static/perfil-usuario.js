@@ -1,9 +1,15 @@
 const nomeDesenvolvedor = document.getElementById("nomeDesenvolvedor");
 const perfilResumo = document.getElementById("perfilResumo");
 const totalPublicados = document.getElementById("totalPublicados");
+const totalSeguidores = document.getElementById("totalSeguidores");
+const totalSeguindo = document.getElementById("totalSeguindo");
 const mensagem = document.getElementById("mensagem");
 const jogosPublicados = document.getElementById("jogosPublicados");
+const btnSeguir = document.getElementById("btnSeguir");
 const logoutButton = document.getElementById("logoutButton");
+
+let usuarioLogadoId = null;
+let perfilUsuarioId = null;
 
 function mostrarMensagem(texto, erro = false) {
     mensagem.textContent = texto;
@@ -100,30 +106,69 @@ function renderizarJogos(jogos, biblioteca, desejos) {
     `).join("");
 }
 
-async function carregarPerfilPublico() {
-    const usuarioId = new URLSearchParams(window.location.search).get("id");
+function renderizarBotaoSeguir(status) {
+    if (!status || (!status.seguindo && !status.solicitacaoPendente)) {
+        btnSeguir.textContent = "Seguir";
+        btnSeguir.className = "button";
+        btnSeguir.dataset.acao = "seguir";
+    } else if (status.seguindo) {
+        btnSeguir.textContent = "Seguindo ✔";
+        btnSeguir.className = "button secondary";
+        btnSeguir.dataset.acao = "deixar";
+    } else if (status.solicitacaoPendente) {
+        btnSeguir.textContent = "Pendente ⏳";
+        btnSeguir.className = "button secondary";
+        btnSeguir.dataset.acao = "cancelar";
+    }
+}
 
-    if (!usuarioId) {
+async function carregarInfoSocial() {
+    const [seguidores, seguindo] = await Promise.all([
+        fetchJson(`/api/usuarios/${perfilUsuarioId}/seguidores`).catch(() => []),
+        fetchJson(`/api/usuarios/${perfilUsuarioId}/seguindo`).catch(() => [])
+    ]);
+
+    totalSeguidores.textContent = seguidores?.length ?? 0;
+    totalSeguindo.textContent = seguindo?.length ?? 0;
+
+    if (usuarioLogadoId && usuarioLogadoId !== perfilUsuarioId) {
+        const status = await fetchJson(`/api/usuarios/${perfilUsuarioId}/seguir`).catch(() => null);
+        renderizarBotaoSeguir(status);
+        btnSeguir.hidden = false;
+    } else {
+        btnSeguir.hidden = true;
+    }
+}
+
+async function carregarPerfilPublico() {
+    perfilUsuarioId = new URLSearchParams(window.location.search).get("id");
+
+    if (!perfilUsuarioId) {
         throw new Error("Perfil de usuário não informado.");
     }
 
-    const [perfil, biblioteca, desejos] = await Promise.all([
-        fetchJson(`/api/usuarios/${usuarioId}/perfil-publico`),
+    const [perfil, biblioteca, desejos, meData] = await Promise.all([
+        fetchJson(`/api/usuarios/${perfilUsuarioId}/perfil-publico`),
         fetchJson("/api/biblioteca").catch(() => []),
-        fetchJson("/api/lista-desejos").catch(() => [])
+        fetchJson("/api/lista-desejos").catch(() => []),
+        fetchJson("/api/auth/me").catch(() => null)
     ]);
 
     if (!perfil) {
         return;
     }
 
+    usuarioLogadoId = meData?.id ?? null;
+
     nomeDesenvolvedor.textContent = perfil.nome;
     perfilResumo.textContent = `Publicando na plataforma desde ${formatarData(perfil.dataCriacao)}.`;
     totalPublicados.textContent = perfil.jogosPublicados?.length ?? 0;
-    
+
     if (biblioteca && desejos) {
         renderizarJogos(perfil.jogosPublicados, biblioteca, desejos);
     }
+
+    await carregarInfoSocial();
 }
 
 async function adicionarBiblioteca(id) {
@@ -157,6 +202,33 @@ jogosPublicados.addEventListener("click", async (event) => {
         } catch (error) {
             mostrarMensagem(error.message, true);
         }
+    }
+});
+
+btnSeguir.addEventListener("click", async () => {
+    const acao = btnSeguir.dataset.acao;
+    btnSeguir.disabled = true;
+
+    try {
+        if (acao === "seguir") {
+            const resultado = await fetchJson(`/api/usuarios/${perfilUsuarioId}/seguir`, { method: "POST" });
+            if (resultado?.solicitacaoPendente) {
+                mostrarMensagem("Solicitação de seguimento enviada.");
+            } else {
+                mostrarMensagem("Você agora segue este usuário.");
+            }
+        } else if (acao === "deixar") {
+            await fetchJson(`/api/usuarios/${perfilUsuarioId}/seguir`, { method: "DELETE" });
+            mostrarMensagem("Você deixou de seguir este usuário.");
+        } else if (acao === "cancelar") {
+            await fetchJson(`/api/usuarios/${perfilUsuarioId}/solicitacao`, { method: "DELETE" });
+            mostrarMensagem("Solicitação cancelada.");
+        }
+        await carregarInfoSocial();
+    } catch (error) {
+        mostrarMensagem(error.message, true);
+    } finally {
+        btnSeguir.disabled = false;
     }
 });
 

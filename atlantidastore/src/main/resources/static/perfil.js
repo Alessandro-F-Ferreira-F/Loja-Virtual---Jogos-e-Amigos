@@ -8,6 +8,7 @@ const totalBiblioteca = document.getElementById("totalBiblioteca");
 const dadosUsuario = document.getElementById("dadosUsuario");
 const jogosPublicados = document.getElementById("jogosPublicados");
 const bibliotecaResumo = document.getElementById("bibliotecaResumo");
+const privacidadeToggle = document.getElementById("privacidadeToggle");
 const logoutButton = document.getElementById("logoutButton");
 
 function mostrarMensagem(texto, erro = false) {
@@ -118,7 +119,23 @@ async function carregarPerfil() {
 
     renderizarLista(jogosPublicados, perfil.jogosPublicados, "Nenhum jogo publicado.");
     renderizarLista(bibliotecaResumo, perfil.biblioteca, "Nenhum jogo na biblioteca.");
+
+    privacidadeToggle.checked = perfil.perfilPrivado;
 }
+
+privacidadeToggle.addEventListener("change", async () => {
+    try {
+        await fetchJson("/api/usuarios/me/privacidade", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ perfilPrivado: privacidadeToggle.checked })
+        });
+        mostrarMensagem(privacidadeToggle.checked ? "Perfil tornado privado." : "Perfil tornado público.");
+    } catch (error) {
+        privacidadeToggle.checked = !privacidadeToggle.checked;
+        mostrarMensagem(error.message, true);
+    }
+});
 
 logoutButton.addEventListener("click", async () => {
     await fetch("/api/auth/logout", {
