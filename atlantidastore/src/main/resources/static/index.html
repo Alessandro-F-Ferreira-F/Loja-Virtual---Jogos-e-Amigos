@@ -11,7 +11,6 @@
         <div class="topbar-inner">
             <a class="brand" href="/">Atlantida Store</a>
             <nav class="nav">
-                <a href="/">Feed</a>
                 <a href="/perfil">Perfil</a>
                 <a href="/biblioteca">Minha Biblioteca</a>
                 <a class="button small" href="/publicar-jogo">Publicar Jogo</a>
@@ -27,67 +26,6 @@
                 <p id="usuarioLogado">Carregando sessão...</p>
             </div>
             <p id="mensagem" class="mensagem" role="status"></p>
-        </section>
-
-        <section class="panel no-print">
-            <div class="header">
-                <div>
-                    <h2>Publicar jogo</h2>
-                    <p>O jogo será registrado na biblioteca central.</p>
-                </div>
-            </div>
-
-            <form id="jogoForm" class="form game-form">
-                <label>
-                    Título
-                    <input id="jogoTitulo" name="titulo" type="text" required>
-                </label>
-
-                <label>
-                    Preço
-                    <input id="jogoPreco" name="preco" type="text" inputmode="numeric" placeholder="R$ 0,00" required>
-                </label>
-
-                <label>
-                    Categorias
-                    <div class="multi-select" id="jogoCategoriasSelect">
-                        <button type="button" class="multi-select-trigger" aria-haspopup="listbox" aria-expanded="false">
-                            <span class="multi-select-value">Selecione as categorias</span>
-                            <span class="multi-select-arrow">▾</span>
-                        </button>
-                        <div class="multi-select-dropdown">
-                            <div class="multi-select-option"><input type="checkbox" value="RPG"><span>RPG</span></div>
-                            <div class="multi-select-option"><input type="checkbox" value="Ação"><span>Ação</span></div>
-                            <div class="multi-select-option"><input type="checkbox" value="Aventura"><span>Aventura</span></div>
-                            <div class="multi-select-option"><input type="checkbox" value="FPS"><span>FPS</span></div>
-                            <div class="multi-select-option"><input type="checkbox" value="RTS"><span>RTS</span></div>
-                            <div class="multi-select-option"><input type="checkbox" value="Esportes"><span>Esportes</span></div>
-                            <div class="multi-select-option"><input type="checkbox" value="Corrida"><span>Corrida</span></div>
-                            <div class="multi-select-option"><input type="checkbox" value="Luta"><span>Luta</span></div>
-                            <div class="multi-select-option"><input type="checkbox" value="Puzzle"><span>Puzzle</span></div>
-                            <div class="multi-select-option"><input type="checkbox" value="Estratégia"><span>Estratégia</span></div>
-                            <div class="multi-select-option"><input type="checkbox" value="Simulação"><span>Simulação</span></div>
-                            <div class="multi-select-option"><input type="checkbox" value="Terror"><span>Terror</span></div>
-                            <div class="multi-select-option"><input type="checkbox" value="Plataforma"><span>Plataforma</span></div>
-                            <div class="multi-select-option"><input type="checkbox" value="MOBA"><span>MOBA</span></div>
-                            <div class="multi-select-option"><input type="checkbox" value="MMO"><span>MMO</span></div>
-                            <div class="multi-select-option"><input type="checkbox" value="Sandbox"><span>Sandbox</span></div>
-                        </div>
-                    </div>
-                </label>
-
-                <label>
-                    URL de download
-                    <input id="jogoDownloadUrl" name="downloadUrl" type="url" placeholder="https://exemplo.com/jogo.exe">
-                </label>
-
-                <label class="span-2">
-                    Descrição
-                    <textarea id="jogoDescricao" name="descricao" rows="3"></textarea>
-                </label>
-
-                <button type="submit">Publicar jogo</button>
-            </form>
         </section>
 
         <section class="panel">

@@ -4,11 +4,16 @@ const jogoForm = document.getElementById("jogoForm");
 const jogoNomeInput = document.getElementById("jogoNome");
 const jogoDescricaoInput = document.getElementById("jogoDescricao");
 const jogoPrecoInput = document.getElementById("jogoPreco");
-const jogoTagsInput = document.getElementById("jogoTags");
 const jogoImagemInput = document.getElementById("jogoImagem");
 const imagemPreview = document.getElementById("imagemPreview");
 const previewPlaceholder = document.getElementById("previewPlaceholder");
 const logoutButton = document.getElementById("logoutButton");
+
+const jogoTagsSelect = document.getElementById("jogoTagsSelect");
+const jogoTagsTrigger = document.getElementById("jogoTagsTrigger");
+const jogoTagsValue = document.getElementById("jogoTagsValue");
+const jogoTagsDropdown = document.getElementById("jogoTagsDropdown");
+const tagsCheckboxes = jogoTagsDropdown ? jogoTagsDropdown.querySelectorAll('input[type="checkbox"]') : [];
 
 const MAX_IMAGE_BYTES = 2 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = new Set(["image/png", "image/jpeg", "image/gif", "image/webp"]);
@@ -106,8 +111,60 @@ jogoImagemInput.addEventListener("change", async () => {
     }
 });
 
+if (jogoTagsTrigger) {
+    jogoTagsTrigger.addEventListener("click", () => {
+        jogoTagsSelect.classList.toggle("open");
+    });
+
+    document.addEventListener("click", (event) => {
+        if (!jogoTagsSelect.contains(event.target)) {
+            jogoTagsSelect.classList.remove("open");
+        }
+    });
+
+    tagsCheckboxes.forEach(cb => {
+        cb.addEventListener("change", () => {
+            const selecionadas = Array.from(tagsCheckboxes)
+                .filter(c => c.checked)
+                .map(c => c.value);
+
+            if (selecionadas.length === 0) {
+                jogoTagsValue.textContent = "Selecione as categorias...";
+                jogoTagsValue.classList.remove("has-selection");
+            } else {
+                jogoTagsValue.textContent = selecionadas.join(", ");
+                jogoTagsValue.classList.add("has-selection");
+            }
+        });
+    });
+}
+
+// Máscara de moeda para o input de preço
+jogoPrecoInput.addEventListener("input", (e) => {
+    let valorTexto = e.target.value.replace(/\D/g, ""); // Remove tudo que não for número
+    
+    if (!valorTexto) {
+        e.target.value = "";
+        return;
+    }
+    
+    let valorNumerico = parseInt(valorTexto, 10) / 100;
+    e.target.value = valorNumerico.toLocaleString("pt-BR", {
+        style: "currency",
+        currency: "BRL"
+    });
+});
+
 jogoForm.addEventListener("submit", async (event) => {
     event.preventDefault();
+
+    const tagsSelecionadas = Array.from(tagsCheckboxes)
+        .filter(cb => cb.checked)
+        .map(cb => cb.value)
+        .join(", ");
+
+    // Converte o valor "R$ 15,99" de volta para número decimal "15.99" pro backend entender
+    const precoNumerico = Number(jogoPrecoInput.value.replace(/\D/g, "")) / 100;
 
     try {
         await fetchJson("/api/jogos", {
@@ -118,8 +175,8 @@ jogoForm.addEventListener("submit", async (event) => {
             body: JSON.stringify({
                 nome: jogoNomeInput.value,
                 descricao: jogoDescricaoInput.value,
-                preco: Number(jogoPrecoInput.value),
-                tags: jogoTagsInput.value,
+                preco: precoNumerico,
+                tags: tagsSelecionadas,
                 imagemCapa
             })
         });
