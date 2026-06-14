@@ -5,6 +5,8 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import dev.osdiscretos.atlantidastore.dto.StoredFile;
+
 @Entity
 @Table(name = "jogos")
 public class Jogo {
@@ -38,8 +40,15 @@ public class Jogo {
     @Column(name = "imagem_capa", columnDefinition = "TEXT")
     private String imagemCapa;
 
-    @Column(name = "download_url", nullable = false, length = 500)
-    private String downloadUrl;
+    private String arquivoStorageKey;
+
+    private String arquivoNomeOriginal;
+
+    private String arquivoContentType;
+
+    private String arquivoTamanhoBytes;
+
+    
 
     protected Jogo() {}
 
@@ -60,7 +69,10 @@ public class Jogo {
         this.dataPublicacao = LocalDateTime.now();
         this.status = StatusJogo.PUBLICADO;
         this.imagemCapa = imagemCapa;
-        this.downloadUrl = "";
+        this.arquivoStorageKey = null;
+        this.arquivoNomeOriginal = null;
+        this.arquivoContentType = null;
+        this.arquivoTamanhoBytes = null;
     }
 
     public UUID getId() {
@@ -103,7 +115,33 @@ public class Jogo {
         this.imagemCapa = imagemCapa;
     }
 
-    public String getDownloadUrl() {
-        return downloadUrl;
+    public String getArquivoStorageKey() {
+        return arquivoStorageKey;
     }
+
+    public String getArquivoNomeOriginal() {
+        return arquivoNomeOriginal;
+    }
+
+    public String getArquivoContentType() {
+        return arquivoContentType;
+    }
+
+    public String getArquivoTamanhoBytes() {
+        return arquivoTamanhoBytes;
+    }
+
+    public void registrarArquivo(StoredFile arquivo) {
+        this.arquivoStorageKey = arquivo.storageKey();
+        this.arquivoNomeOriginal = arquivo.nomeOriginal();
+        this.arquivoContentType = arquivo.contentType();
+        this.arquivoTamanhoBytes = arquivo.tamanhoBytes().toString();
+        this.dataPublicacao = LocalDateTime.now();
+        this.status = StatusJogo.PUBLICADO;
+    }
+
+    public boolean possuiArquivo() {
+        return arquivoStorageKey != null && !arquivoStorageKey.isBlank();
+    }
+
 }
