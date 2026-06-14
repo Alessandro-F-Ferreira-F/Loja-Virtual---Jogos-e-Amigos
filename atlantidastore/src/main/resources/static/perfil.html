@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Perfil - Atlantida Store</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <header class="topbar">
+        <div class="topbar-inner">
+            <a class="brand" href="/">Atlantida Store</a>
+            <nav class="nav">
+                <a href="/">Feed</a>
+                <a href="/perfil">Perfil</a>
+                <a href="/biblioteca">Minha Biblioteca</a>
+                <a class="button small" href="/publicar-jogo">Publicar Jogo</a>
+                <button class="danger small" id="logoutButton" type="button">Sair</button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="profile-hero">
+            <div>
+                <h1>Perfil</h1>
+                <p id="perfilResumo">Carregando perfil...</p>
+            </div>
+            <div class="profile-stats">
+                <div>
+                    <strong id="totalPublicados">0</strong>
+                    <span>publicados</span>
+                </div>
+                <div>
+                    <strong id="totalBiblioteca">0</strong>
+                    <span>na biblioteca</span>
+                </div>
+            </div>
+            <p id="mensagem" class="mensagem" role="status"></p>
+        </section>
+
+        <section class="profile-layout">
+            <aside class="panel profile-card">
+                <div class="avatar" id="avatarUsuario">?</div>
+                <h2 id="nomeUsuario">Usuário</h2>
+                <p id="emailUsuario">-</p>
+                <dl class="profile-list" id="dadosUsuario"></dl>
+            </aside>
+
+            <div class="profile-content">
+                <div class="panel">
+                    <div class="header">
+                        <div>
+                            <h2>Jogos publicados</h2>
+                        </div>
+                    </div>
+                    <div id="jogosPublicados" class="compact-list"></div>
+                </div>
+
+                <div class="panel">
+                    <div class="header">
+                        <div>
+                            <h2>Biblioteca</h2>
+                        </div>
+                    </div>
+                    <div id="bibliotecaResumo" class="compact-list"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="/perfil.js"></script>
+</body>
+</html>

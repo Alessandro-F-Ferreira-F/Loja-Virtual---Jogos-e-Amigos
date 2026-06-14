@@ -3,23 +3,29 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Catálogo</title>
+    <title>Atlantida Store</title>
     <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-    <main class="container">
-        <section class="panel">
-            <div class="header">
-                <div>
-                    <h1>Catálogo da plataforma</h1>
-                    <p id="usuarioLogado">Carregando sessão...</p>
-                </div>
-                <div class="actions">
-                    <button class="secondary" id="imprimirButton" type="button">Imprimir</button>
-                    <button class="danger" id="logoutButton" type="button">Sair</button>
-                </div>
-            </div>
+    <header class="topbar">
+        <div class="topbar-inner">
+            <a class="brand" href="/">Atlantida Store</a>
+            <nav class="nav">
+                <a href="/">Feed</a>
+                <a href="/perfil">Perfil</a>
+                <a href="/biblioteca">Minha Biblioteca</a>
+                <a class="button small" href="/publicar-jogo">Publicar Jogo</a>
+                <button class="danger small" id="logoutButton" type="button">Sair</button>
+            </nav>
+        </div>
+    </header>
 
+    <main class="container">
+        <section class="page-title">
+            <div>
+                <h1>Feed de jogos</h1>
+                <p id="usuarioLogado">Carregando sessão...</p>
+            </div>
             <p id="mensagem" class="mensagem" role="status"></p>
         </section>
 
@@ -87,56 +93,13 @@
         <section class="panel">
             <div class="header">
                 <div>
-                    <h2>Biblioteca central de jogos</h2>
-                    <p>Jogos publicados por usuários da plataforma.</p>
+                    <h2>Publicados recentemente</h2>
+                    <p>Jogos ordenados pela data de publicação.</p>
                 </div>
             </div>
 
-            <div class="table-wrap">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Título</th>
-                            <th>Preço</th>
-                            <th>Categorias</th>
-                            <th>Publicado em</th>
-                            <th class="acoes">Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody id="jogosTabela">
-                        <tr>
-                            <td colspan="5">Carregando jogos...</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-        <section class="panel">
-            <div class="header">
-                <div>
-                    <h2>Usuários cadastrados</h2>
-                    <p>Contas existentes na plataforma.</p>
-                </div>
-                <a class="button secondary no-print" href="/cadastro">Cadastrar usuário</a>
-            </div>
-
-            <div class="table-wrap">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Nome</th>
-                            <th>E-mail</th>
-                            <th>Criado em</th>
-                            <th class="acoes">Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody id="usuariosTabela">
-                        <tr>
-                            <td colspan="4">Carregando usuários...</td>
-                        </tr>
-                    </tbody>
-                </table>
+            <div id="feedLista" class="game-grid">
+                <p class="empty">Carregando jogos...</p>
             </div>
         </section>
     </main>

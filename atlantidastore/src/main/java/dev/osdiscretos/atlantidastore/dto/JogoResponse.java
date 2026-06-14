@@ -4,6 +4,7 @@ import dev.osdiscretos.atlantidastore.model.Jogo;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,12 +22,12 @@ public record JogoResponse(
     public static JogoResponse from(Jogo jogo) {
         return new JogoResponse(
             jogo.getId(),
-            jogo.getTitulo(),
+            jogo.getNome(),
             jogo.getDescricao(),
             jogo.getPreco(),
-            jogo.getPublicadorId(),
-            jogo.getCategorias(),
-            jogo.getDataCriacao(),
+            jogo.getDesenvolvedor() != null ? jogo.getDesenvolvedor().getId() : null,
+            jogo.getTags() != null && !jogo.getTags().isBlank() ? Arrays.asList(jogo.getTags().split("\\|")) : List.of(),
+            jogo.getDataPublicacao(),
             jogo.getDownloadUrl(),
             jogo.getImagemCapa()
         );

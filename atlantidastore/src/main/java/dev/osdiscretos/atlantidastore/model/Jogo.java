@@ -3,10 +3,7 @@ package dev.osdiscretos.atlantidastore.model;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "jogos")
@@ -15,8 +12,8 @@ public class Jogo {
     @Column(columnDefinition = "TEXT")
     private UUID id;
 
-    @Column(nullable = false, length = 255)
-    private String titulo;
+    @Column(name = "titulo", nullable = false, length = 255)
+    private String nome;
 
     @Column(nullable = false, columnDefinition = "TEXT")
     private String descricao;
@@ -24,63 +21,54 @@ public class Jogo {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal preco;
 
-    @Column(nullable = false, columnDefinition = "TEXT")
-    private UUID publicadorId;
+    @Column(name = "categorias", nullable = false, columnDefinition = "TEXT")
+    private String tags;
 
-    @Column(nullable = false, columnDefinition = "TEXT")
-    private String categorias;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "publicador_id", nullable = false)
+    private Usuario desenvolvedor;
 
-    @Column(nullable = false)
-    private LocalDateTime dataCriacao;
+    @Column(name = "data_criacao", nullable = false)
+    private LocalDateTime dataPublicacao;
 
-    @Column(nullable = false, length = 500)
-    private String downloadUrl;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20, columnDefinition = "varchar(20) default 'PUBLICADO'")
+    private StatusJogo status;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "imagem_capa", columnDefinition = "TEXT")
     private String imagemCapa;
+
+    @Column(name = "download_url", nullable = false, length = 500)
+    private String downloadUrl;
 
     protected Jogo() {}
 
     public Jogo(
-        String titulo,
+        String nome,
         String descricao,
         BigDecimal preco,
-        UUID publicadorId,
-        List<String> categorias,
-        String downloadUrl,
+        String tags,
+        Usuario desenvolvedor,
         String imagemCapa
     ) {
-        this(UUID.randomUUID(), titulo, descricao, preco, publicadorId, categorias, LocalDateTime.now(), downloadUrl, imagemCapa);
-    }
-
-    public Jogo(
-        UUID id,
-        String titulo,
-        String descricao,
-        BigDecimal preco,
-        UUID publicadorId,
-        List<String> categorias,
-        LocalDateTime dataCriacao,
-        String downloadUrl,
-        String imagemCapa
-    ) {
-        this.id = id;
-        this.titulo = titulo;
+        this.id = UUID.randomUUID();
+        this.nome = nome;
         this.descricao = descricao;
         this.preco = preco;
-        this.publicadorId = publicadorId;
-        this.categorias = String.join("|", categorias);
-        this.dataCriacao = dataCriacao;
-        this.downloadUrl = downloadUrl;
+        this.tags = tags;
+        this.desenvolvedor = desenvolvedor;
+        this.dataPublicacao = LocalDateTime.now();
+        this.status = StatusJogo.PUBLICADO;
         this.imagemCapa = imagemCapa;
+        this.downloadUrl = "";
     }
 
     public UUID getId() {
         return id;
     }
 
-    public String getTitulo() {
-        return titulo;
+    public String getNome() {
+        return nome;
     }
 
     public String getDescricao() {
@@ -91,29 +79,31 @@ public class Jogo {
         return preco;
     }
 
-    public UUID getPublicadorId() {
-        return publicadorId;
+    public String getTags() {
+        return tags;
     }
 
-    public List<String> getCategorias() {
-        if (categorias == null || categorias.isBlank()) {
-            return List.of();
-        }
-        return Arrays.stream(categorias.split("\\|"))
-            .map(String::trim)
-            .filter(s -> !s.isBlank())
-            .collect(Collectors.toList());
+    public Usuario getDesenvolvedor() {
+        return desenvolvedor;
     }
 
-    public LocalDateTime getDataCriacao() {
-        return dataCriacao;
+    public LocalDateTime getDataPublicacao() {
+        return dataPublicacao;
     }
 
-    public String getDownloadUrl() {
-        return downloadUrl;
+    public StatusJogo getStatus() {
+        return status;
     }
 
     public String getImagemCapa() {
         return imagemCapa;
+    }
+
+    public void setImagemCapa(String imagemCapa) {
+        this.imagemCapa = imagemCapa;
+    }
+
+    public String getDownloadUrl() {
+        return downloadUrl;
     }
 }

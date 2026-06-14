@@ -51,17 +51,16 @@ public class AuthFilter extends OncePerRequestFilter {
         }
 
         if ("GET".equalsIgnoreCase(method)) {
-            return path.equals("/login")
+            return isStaticAsset(path)
+                || path.equals("/login")
                 || path.equals("/login.html")
                 || path.equals("/cadastro")
                 || path.equals("/cadastro.html")
-                || path.equals("/styles.css")
-                || path.equals("/login.js")
-                || path.equals("/cadastro.js")
-                || path.equals("/favicon.ico")
-                || path.equals("/error")
-                || path.equals("/api/jogos")
-                || path.startsWith("/api/jogos/");
+                || path.equals("/api/jogos/feed")
+                || path.matches("/api/jogos/[0-9a-fA-F\\-]{36}")
+                || path.matches("/api/jogos/[0-9a-fA-F\\-]{36}/capa")
+                || path.matches("/api/usuarios/[0-9a-fA-F\\-]{36}/perfil-publico")
+                || path.equals("/error");
         }
 
         if ("POST".equalsIgnoreCase(method)) {
@@ -71,6 +70,18 @@ public class AuthFilter extends OncePerRequestFilter {
         }
 
         return false;
+    }
+
+    private boolean isStaticAsset(String path) {
+        return path.equals("/favicon.ico")
+            || path.endsWith(".css")
+            || path.endsWith(".js")
+            || path.endsWith(".png")
+            || path.endsWith(".jpg")
+            || path.endsWith(".jpeg")
+            || path.endsWith(".gif")
+            || path.endsWith(".svg")
+            || path.endsWith(".webp");
     }
 
     private String readSessionToken(HttpServletRequest request) {

@@ -22,6 +22,20 @@ function mostrarMensagem(texto, erro = false) {
     mensagem.classList.toggle("erro", erro);
 }
 
+async function extrairMensagemErro(resposta, fallback) {
+    const texto = await resposta.text().catch(() => "");
+
+    if (!texto) {
+        return fallback;
+    }
+
+    try {
+        return JSON.parse(texto).mensagem || fallback;
+    } catch {
+        return texto;
+    }
+}
+
 form.addEventListener("submit", async (event) => {
     event.preventDefault();
 
@@ -38,8 +52,7 @@ form.addEventListener("submit", async (event) => {
         });
 
         if (!resposta.ok) {
-            const erro = await resposta.json();
-            throw new Error(erro.mensagem || "Não foi possível entrar.");
+            throw new Error(await extrairMensagemErro(resposta, "Não foi possível entrar."));
         }
 
         window.location.href = "/";

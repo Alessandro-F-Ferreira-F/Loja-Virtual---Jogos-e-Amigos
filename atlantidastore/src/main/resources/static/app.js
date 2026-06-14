@@ -1,7 +1,5 @@
 const usuarioLogado = document.getElementById("usuarioLogado");
 const mensagem = document.getElementById("mensagem");
-const usuariosTabela = document.getElementById("usuariosTabela");
-const jogosTabela = document.getElementById("jogosTabela");
 const jogoForm = document.getElementById("jogoForm");
 const jogoTituloInput = document.getElementById("jogoTitulo");
 const jogoDescricaoInput = document.getElementById("jogoDescricao");
@@ -11,7 +9,7 @@ const jogoCategoriasGatilho = jogoCategoriasSelect.querySelector(".multi-select-
 const jogoCategoriasValor = jogoCategoriasSelect.querySelector(".multi-select-value");
 const jogoCategoriasDropdown = jogoCategoriasSelect.querySelector(".multi-select-dropdown");
 const jogoDownloadUrlInput = document.getElementById("jogoDownloadUrl");
-const imprimirButton = document.getElementById("imprimirButton");
+const feedLista = document.getElementById("feedLista");
 const logoutButton = document.getElementById("logoutButton");
 
 let digitosCentavos = "";
@@ -86,43 +84,33 @@ function escaparHtml(valor) {
         .replaceAll("'", "&#039;");
 }
 
-function renderizarUsuarios(usuarios) {
-    if (usuarios.length === 0) {
-        usuariosTabela.innerHTML = '<tr><td colspan="4">Nenhum usuário cadastrado.</td></tr>';
-        return;
+function renderizarFeed(jogos) {
+    if (!Array.isArray(jogos)) {
+        throw new Error("Resposta inválida ao carregar o feed.");
     }
 
-    usuariosTabela.innerHTML = usuarios.map((usuario) => `
-        <tr>
-            <td>${escaparHtml(usuario.nome)}</td>
-            <td>${escaparHtml(usuario.email)}</td>
-            <td>${formatarData(usuario.dataCriacao)}</td>
-            <td class="acoes">
-                <button class="danger" type="button" data-user-id="${usuario.id}">Remover</button>
-            </td>
-        </tr>
-    `).join("");
-}
-
-function renderizarJogos(jogos) {
     if (jogos.length === 0) {
-        jogosTabela.innerHTML = '<tr><td colspan="5">Nenhum jogo publicado.</td></tr>';
+        feedLista.innerHTML = '<p class="empty">Nenhum jogo publicado.</p>';
         return;
     }
 
-    jogosTabela.innerHTML = jogos.map((jogo) => `
-        <tr>
-            <td>
-                <strong>${escaparHtml(jogo.titulo)}</strong>
-                <div class="muted">${escaparHtml(jogo.descricao)}</div>
-            </td>
-            <td>${formatarPreco(jogo.preco)}</td>
-            <td>${escaparHtml((jogo.categorias || []).join(", "))}</td>
-            <td>${formatarData(jogo.dataCriacao)}</td>
-            <td class="acoes">
-                <button class="danger" type="button" data-game-id="${jogo.id}">Remover</button>
-            </td>
-        </tr>
+    feedLista.innerHTML = jogos.map((jogo) => `
+        <article class="game-card">
+            ${jogo.imagemCapaUrl ? `<img class="game-cover" src="${escaparHtml(jogo.imagemCapaUrl)}" alt="Capa de ${escaparHtml(jogo.nome)}">` : '<div class="game-cover placeholder">Sem capa</div>'}
+            <div class="game-body">
+                <div class="game-heading">
+                    <h3>${escaparHtml(jogo.nome)}</h3>
+                    <strong>${formatarPreco(jogo.preco)}</strong>
+                </div>
+                <p>${escaparHtml(jogo.descricao)}</p>
+                <div class="game-meta">
+                    <span>${escaparHtml(jogo.tags || "Sem tags")}</span>
+                    <a class="publisher-link" href="/perfil-usuario?id=${jogo.desenvolvedorId}">${escaparHtml(jogo.desenvolvedorNome || "Desenvolvedor")}</a>
+                    <span>${formatarData(jogo.dataPublicacao)}</span>
+                </div>
+                <button type="button" data-add-game-id="${jogo.id}">Adicionar à biblioteca</button>
+            </div>
+        </article>
     `).join("");
 }
 
@@ -135,7 +123,15 @@ async function fetchJson(url, options = {}) {
     }
 
     if (!resposta.ok) {
-        const erro = await resposta.json().catch(() => ({}));
+        const texto = await resposta.text().catch(() => "");
+        let erro = {};
+
+        try {
+            erro = texto ? JSON.parse(texto) : {};
+        } catch {
+            erro = { mensagem: texto };
+        }
+
         throw new Error(erro.mensagem || "Não foi possível concluir a operação.");
     }
 
@@ -154,19 +150,11 @@ async function carregarSessao() {
     }
 }
 
-async function carregarUsuarios() {
-    const usuarios = await fetchJson("/api/usuarios");
-
-    if (usuarios) {
-        renderizarUsuarios(usuarios);
-    }
-}
-
-async function carregarJogos() {
-    const jogos = await fetchJson("/api/jogos");
+async function carregarFeed() {
+    const jogos = await fetchJson("/api/jogos/feed");
 
     if (jogos) {
-        renderizarJogos(jogos);
+        renderizarFeed(jogos);
     }
 }
 
@@ -225,11 +213,10 @@ async function publicarJogo(event) {
             "Content-Type": "application/json"
         },
         body: JSON.stringify({
-            titulo: jogoTituloInput.value,
+            nome: jogoTituloInput.value,
             descricao: jogoDescricaoInput.value,
             preco: parseInt(digitosCentavos || "0", 10) / 100,
-            categorias,
-            downloadUrl: jogoDownloadUrlInput.value
+            tags: categorias.join("|")
         })
     });
 
@@ -238,38 +225,20 @@ async function publicarJogo(event) {
     jogoCategoriasDropdown.querySelectorAll("input[type=checkbox]").forEach((cb) => { cb.checked = false; });
     atualizarLabelCategorias();
     mostrarMensagem("Jogo publicado com sucesso.");
-    await carregarJogos();
+    await carregarFeed();
 }
 
-async function removerUsuario(id) {
-    await fetchJson(`/api/usuarios/${id}`, {
-        method: "DELETE"
+if (jogoForm) {
+    jogoForm.addEventListener("submit", publicarJogo);
+}
+
+async function adicionarBiblioteca(id) {
+    await fetchJson(`/api/biblioteca/${id}`, {
+        method: "POST"
     });
 
-    mostrarMensagem("Usuário removido com sucesso.");
-    await Promise.all([carregarUsuarios(), carregarJogos()]);
+    mostrarMensagem("Jogo adicionado à biblioteca.");
 }
-
-async function removerJogo(id) {
-    await fetchJson(`/api/jogos/${id}`, {
-        method: "DELETE"
-    });
-
-    mostrarMensagem("Jogo removido com sucesso.");
-    await carregarJogos();
-}
-
-jogoForm.addEventListener("submit", async (event) => {
-    try {
-        await publicarJogo(event);
-    } catch (error) {
-        mostrarMensagem(error.message, true);
-    }
-});
-
-imprimirButton.addEventListener("click", () => {
-    window.print();
-});
 
 logoutButton.addEventListener("click", async () => {
     await fetch("/api/auth/logout", {
@@ -279,32 +248,20 @@ logoutButton.addEventListener("click", async () => {
     window.location.href = "/login";
 });
 
-usuariosTabela.addEventListener("click", async (event) => {
-    if (!event.target.matches("button[data-user-id]")) {
+feedLista.addEventListener("click", async (event) => {
+    if (!event.target.matches("button[data-add-game-id]")) {
         return;
     }
 
     try {
-        await removerUsuario(event.target.dataset.userId);
+        await adicionarBiblioteca(event.target.dataset.addGameId);
     } catch (error) {
         mostrarMensagem(error.message, true);
     }
 });
 
-jogosTabela.addEventListener("click", async (event) => {
-    if (!event.target.matches("button[data-game-id]")) {
-        return;
-    }
-
-    try {
-        await removerJogo(event.target.dataset.gameId);
-    } catch (error) {
-        mostrarMensagem(error.message, true);
-    }
+carregarSessao().catch((error) => mostrarMensagem(error.message, true));
+carregarFeed().catch((error) => {
+    feedLista.innerHTML = '<p class="empty">Não foi possível carregar os jogos.</p>';
+    mostrarMensagem(error.message, true);
 });
-
-Promise.all([
-    carregarSessao(),
-    carregarUsuarios(),
-    carregarJogos()
-]).catch((error) => mostrarMensagem(error.message, true));

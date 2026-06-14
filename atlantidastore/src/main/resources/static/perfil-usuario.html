@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Perfil do Desenvolvedor - Atlantida Store</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <header class="topbar">
+        <div class="topbar-inner">
+            <a class="brand" href="/">Atlantida Store</a>
+            <nav class="nav">
+                <a href="/">Feed</a>
+                <a href="/perfil">Perfil</a>
+                <a href="/biblioteca">Minha Biblioteca</a>
+                <a class="button small" href="/publicar-jogo">Publicar Jogo</a>
+                <button class="danger small" id="logoutButton" type="button">Sair</button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="profile-hero">
+            <div>
+                <h1 id="nomeDesenvolvedor">Desenvolvedor</h1>
+                <p id="perfilResumo">Carregando perfil...</p>
+            </div>
+            <div class="profile-stats">
+                <div>
+                    <strong id="totalPublicados">0</strong>
+                    <span>jogos publicados</span>
+                </div>
+            </div>
+            <p id="mensagem" class="mensagem" role="status"></p>
+        </section>
+
+        <section class="panel">
+            <div class="header">
+                <div>
+                    <h2>Publicações</h2>
+                    <p>Jogos publicados por este usuário.</p>
+                </div>
+            </div>
+            <div id="jogosPublicados" class="game-grid">
+                <p class="empty">Carregando jogos...</p>
+            </div>
+        </section>
+    </main>
+
+    <script src="/perfil-usuario.js"></script>
+</body>
+</html>
