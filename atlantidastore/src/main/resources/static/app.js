@@ -5,9 +5,9 @@ const jogoTituloInput = document.getElementById("jogoTitulo");
 const jogoDescricaoInput = document.getElementById("jogoDescricao");
 const jogoPrecoInput = document.getElementById("jogoPreco");
 const jogoCategoriasSelect = document.getElementById("jogoCategoriasSelect");
-const jogoCategoriasGatilho = jogoCategoriasSelect.querySelector(".multi-select-trigger");
-const jogoCategoriasValor = jogoCategoriasSelect.querySelector(".multi-select-value");
-const jogoCategoriasDropdown = jogoCategoriasSelect.querySelector(".multi-select-dropdown");
+const jogoCategoriasGatilho = jogoCategoriasSelect?.querySelector(".multi-select-trigger");
+const jogoCategoriasValor = jogoCategoriasSelect?.querySelector(".multi-select-value");
+const jogoCategoriasDropdown = jogoCategoriasSelect?.querySelector(".multi-select-dropdown");
 const jogoDownloadUrlInput = document.getElementById("jogoDownloadUrl");
 const feedLista = document.getElementById("feedLista");
 const logoutButton = document.getElementById("logoutButton");
@@ -26,31 +26,33 @@ function atualizarExibicaoPreco() {
     }).format(centavos / 100);
 }
 
-jogoPrecoInput.addEventListener("keydown", (event) => {
-    if (event.ctrlKey || event.metaKey || event.altKey) return;
-    if (/^\d$/.test(event.key)) {
+if (jogoPrecoInput) {
+    jogoPrecoInput.addEventListener("keydown", (event) => {
+        if (event.ctrlKey || event.metaKey || event.altKey) return;
+        if (/^\d$/.test(event.key)) {
+            event.preventDefault();
+            if (digitosCentavos.length < 10) {
+                digitosCentavos += event.key;
+            }
+            atualizarExibicaoPreco();
+        } else if (event.key === "Backspace") {
+            event.preventDefault();
+            digitosCentavos = digitosCentavos.slice(0, -1);
+            atualizarExibicaoPreco();
+        } else if (event.key !== "Tab" && event.key !== "Enter") {
+            event.preventDefault();
+        }
+    });
+
+    jogoPrecoInput.addEventListener("paste", (event) => {
         event.preventDefault();
-        if (digitosCentavos.length < 10) {
-            digitosCentavos += event.key;
+        const colado = (event.clipboardData || window.clipboardData).getData("text");
+        for (const c of colado.replace(/\D/g, "")) {
+            if (digitosCentavos.length < 10) digitosCentavos += c;
         }
         atualizarExibicaoPreco();
-    } else if (event.key === "Backspace") {
-        event.preventDefault();
-        digitosCentavos = digitosCentavos.slice(0, -1);
-        atualizarExibicaoPreco();
-    } else if (event.key !== "Tab" && event.key !== "Enter") {
-        event.preventDefault();
-    }
-});
-
-jogoPrecoInput.addEventListener("paste", (event) => {
-    event.preventDefault();
-    const colado = (event.clipboardData || window.clipboardData).getData("text");
-    for (const c of colado.replace(/\D/g, "")) {
-        if (digitosCentavos.length < 10) digitosCentavos += c;
-    }
-    atualizarExibicaoPreco();
-});
+    });
+}
 
 function mostrarMensagem(texto, erro = false) {
     mensagem.textContent = texto;
@@ -84,7 +86,7 @@ function escaparHtml(valor) {
         .replaceAll("'", "&#039;");
 }
 
-function renderizarFeed(jogos) {
+function renderizarFeed(jogos, biblioteca, desejos) {
     if (!Array.isArray(jogos)) {
         throw new Error("Resposta inválida ao carregar o feed.");
     }
@@ -93,6 +95,9 @@ function renderizarFeed(jogos) {
         feedLista.innerHTML = '<p class="empty">Nenhum jogo publicado.</p>';
         return;
     }
+
+    const idsBiblioteca = new Set(biblioteca.map((j) => j.id || j.jogoId));
+    const idsDesejos = new Set(desejos.map((j) => j.id || j.jogoId));
 
     feedLista.innerHTML = jogos.map((jogo) => `
         <article class="game-card">
@@ -108,7 +113,8 @@ function renderizarFeed(jogos) {
                     <a class="publisher-link" href="/perfil-usuario?id=${jogo.desenvolvedorId}">${escaparHtml(jogo.desenvolvedorNome || "Desenvolvedor")}</a>
                     <span>${formatarData(jogo.dataPublicacao)}</span>
                 </div>
-                <button type="button" data-add-game-id="${jogo.id}">Adicionar à biblioteca</button>
+                ${idsBiblioteca.has(jogo.id) ? '<span class="muted">✔ Na biblioteca</span>' : `<button type="button" data-add-game-id="${jogo.id}">Adicionar à biblioteca</button>`}
+                ${idsDesejos.has(jogo.id) ? '<span class="muted">🤍 Na lista de desejos</span>' : `<button type="button" data-wishlist-game-id="${jogo.id}">Adicionar à lista de desejos</button>`}
             </div>
         </article>
     `).join("");
@@ -139,7 +145,8 @@ async function fetchJson(url, options = {}) {
         return null;
     }
 
-    return resposta.json();
+    const textoCorpo = await resposta.text();
+    return textoCorpo ? JSON.parse(textoCorpo) : null;
 }
 
 async function carregarSessao() {
@@ -151,10 +158,14 @@ async function carregarSessao() {
 }
 
 async function carregarFeed() {
-    const jogos = await fetchJson("/api/jogos/feed");
+    const [jogos, biblioteca, desejos] = await Promise.all([
+        fetchJson("/api/jogos/feed"),
+        fetchJson("/api/biblioteca").catch(() => []),
+        fetchJson("/api/lista-desejos").catch(() => [])
+    ]);
 
-    if (jogos) {
-        renderizarFeed(jogos);
+    if (jogos && biblioteca && desejos) {
+        renderizarFeed(jogos, biblioteca, desejos);
     }
 }
 
@@ -175,26 +186,32 @@ function atualizarLabelCategorias() {
 }
 
 function fecharCategorias() {
-    jogoCategoriasSelect.classList.remove("open");
-    jogoCategoriasGatilho.setAttribute("aria-expanded", "false");
+    if (jogoCategoriasSelect) {
+        jogoCategoriasSelect.classList.remove("open");
+        jogoCategoriasGatilho.setAttribute("aria-expanded", "false");
+    }
 }
 
-jogoCategoriasGatilho.addEventListener("click", (event) => {
-    event.stopPropagation();
-    const aberto = jogoCategoriasSelect.classList.toggle("open");
-    jogoCategoriasGatilho.setAttribute("aria-expanded", String(aberto));
-});
+if (jogoCategoriasGatilho) {
+    jogoCategoriasGatilho.addEventListener("click", (event) => {
+        event.stopPropagation();
+        const aberto = jogoCategoriasSelect.classList.toggle("open");
+        jogoCategoriasGatilho.setAttribute("aria-expanded", String(aberto));
+    });
+}
 
-jogoCategoriasDropdown.addEventListener("click", (event) => {
-    const opcao = event.target.closest(".multi-select-option");
-    if (!opcao) return;
-    const checkbox = opcao.querySelector("input[type=checkbox]");
-    if (event.target !== checkbox) {
-        checkbox.checked = !checkbox.checked;
-    }
-    atualizarLabelCategorias();
-    event.stopPropagation();
-});
+if (jogoCategoriasDropdown) {
+    jogoCategoriasDropdown.addEventListener("click", (event) => {
+        const opcao = event.target.closest(".multi-select-option");
+        if (!opcao) return;
+        const checkbox = opcao.querySelector("input[type=checkbox]");
+        if (event.target !== checkbox) {
+            checkbox.checked = !checkbox.checked;
+        }
+        atualizarLabelCategorias();
+        event.stopPropagation();
+    });
+}
 
 document.addEventListener("click", fecharCategorias);
 
@@ -238,6 +255,16 @@ async function adicionarBiblioteca(id) {
     });
 
     mostrarMensagem("Jogo adicionado à biblioteca.");
+    await carregarFeed();
+}
+
+async function adicionarListaDesejos(id) {
+    await fetchJson(`/api/lista-desejos/${id}`, {
+        method: "POST"
+    });
+
+    mostrarMensagem("Jogo adicionado à lista de desejos.");
+    await carregarFeed();
 }
 
 logoutButton.addEventListener("click", async () => {
@@ -249,14 +276,18 @@ logoutButton.addEventListener("click", async () => {
 });
 
 feedLista.addEventListener("click", async (event) => {
-    if (!event.target.matches("button[data-add-game-id]")) {
-        return;
-    }
-
-    try {
-        await adicionarBiblioteca(event.target.dataset.addGameId);
-    } catch (error) {
-        mostrarMensagem(error.message, true);
+    if (event.target.matches("button[data-add-game-id]")) {
+        try {
+            await adicionarBiblioteca(event.target.dataset.addGameId);
+        } catch (error) {
+            mostrarMensagem(error.message, true);
+        }
+    } else if (event.target.matches("button[data-wishlist-game-id]")) {
+        try {
+            await adicionarListaDesejos(event.target.dataset.wishlistGameId);
+        } catch (error) {
+            mostrarMensagem(error.message, true);
+        }
     }
 });
 

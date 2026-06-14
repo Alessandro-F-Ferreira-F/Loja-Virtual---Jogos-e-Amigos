@@ -39,4 +39,9 @@ public class PaginaController {
     public String perfilUsuario() {
         return "forward:/perfil-usuario.html";
     }
+
+    @GetMapping("/lista-desejos")
+    public String listaDesejos() {
+        return "forward:/lista-desejos.html";
+    }
 }
