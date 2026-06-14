@@ -1,5 +1,13 @@
 package dev.osdiscretos.atlantidastore.service;
 
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.UUID;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import dev.osdiscretos.atlantidastore.dto.JogoResponseDTO;
 import dev.osdiscretos.atlantidastore.dto.JogoResumoDTO;
 import dev.osdiscretos.atlantidastore.dto.PublicarJogoRequestDTO;
@@ -8,13 +16,6 @@ import dev.osdiscretos.atlantidastore.model.StatusJogo;
 import dev.osdiscretos.atlantidastore.model.Usuario;
 import dev.osdiscretos.atlantidastore.repository.JogoRepository;
 import dev.osdiscretos.atlantidastore.repository.UsuarioRepository;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.UUID;
 
 @Service
 public class JogoService {
@@ -69,13 +70,12 @@ public class JogoService {
             throw new NoSuchElementException("Usuário desenvolvedor não encontrado");
         }
 
-        Jogo jogo = new Jogo(
+        Jogo jogo = Jogo.criarPublicado(
             nome,
             descricao,
             preco,
             tags,
-            desenvolvedor,
-            null
+            desenvolvedor
         );
         jogo.setImagemCapa(gameImageStorageService.salvarDataUrl(request.imagemCapa(), jogo.getId()));
 

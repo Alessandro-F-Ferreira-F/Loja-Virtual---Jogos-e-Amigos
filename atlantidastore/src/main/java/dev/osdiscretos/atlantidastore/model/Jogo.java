@@ -1,9 +1,18 @@
 package dev.osdiscretos.atlantidastore.model;
 
-import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "jogos")
@@ -61,6 +70,23 @@ public class Jogo {
         this.status = StatusJogo.PUBLICADO;
         this.imagemCapa = imagemCapa;
         this.downloadUrl = "";
+    }
+
+    public static Jogo criarPublicado(
+        String nome,
+        String descricao,
+        BigDecimal preco,
+        String tags,
+        Usuario desenvolvedor
+    ) {
+        return new Jogo(
+            nome,
+            descricao,
+            preco,
+            tags,
+            desenvolvedor,
+            null
+        );
     }
 
     public UUID getId() {

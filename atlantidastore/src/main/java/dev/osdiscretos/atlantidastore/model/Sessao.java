@@ -1,8 +1,12 @@
 package dev.osdiscretos.atlantidastore.model;
 
-import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "sessoes")
@@ -27,6 +31,16 @@ public class Sessao {
         this.usuarioId = usuarioId;
         this.criadoEm = criadoEm;
         this.expiraEm = expiraEm;
+    }
+
+    public static Sessao criarParaUsuario(String token, UUID usuarioId, int maxAgeSeconds) {
+        LocalDateTime criadoEm = LocalDateTime.now();
+        return new Sessao(
+            token,
+            usuarioId,
+            criadoEm,
+            criadoEm.plusSeconds(maxAgeSeconds)
+        );
     }
 
     public String getToken() {

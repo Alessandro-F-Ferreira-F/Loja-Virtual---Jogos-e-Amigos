@@ -1,8 +1,12 @@
 package dev.osdiscretos.atlantidastore.model;
 
-import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "usuarios")
@@ -35,6 +39,10 @@ public class Usuario {
         this.email = email;
         this.senhaHash = senhaHash;
         this.dataCriacao = LocalDateTime.now();
+    }
+
+    public static Usuario cadastrar(String nome, String email, String senhaHash) {
+        return new Usuario(nome, email, senhaHash);
     }
 
     public Usuario(UUID id, String nome, String email, String senhaHash, LocalDateTime dataCriacao) {
@@ -77,4 +85,3 @@ public class Usuario {
         this.perfilPrivado = false;
     }
 }
-

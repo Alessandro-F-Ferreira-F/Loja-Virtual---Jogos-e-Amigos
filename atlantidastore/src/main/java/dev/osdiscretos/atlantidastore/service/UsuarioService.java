@@ -1,22 +1,22 @@
 package dev.osdiscretos.atlantidastore.service;
 
 
-import dev.osdiscretos.atlantidastore.auth.PasswordHasher;
-import dev.osdiscretos.atlantidastore.model.Usuario;
-import dev.osdiscretos.atlantidastore.repository.SessaoRepository;
-import dev.osdiscretos.atlantidastore.repository.UsuarioRepository;
-import dev.osdiscretos.atlantidastore.dto.CadastroRequestDTO;
-import dev.osdiscretos.atlantidastore.dto.PerfilPublicoUsuarioDTO;
-import dev.osdiscretos.atlantidastore.dto.PerfilUsuarioDTO;
-import dev.osdiscretos.atlantidastore.dto.UsuarioResponse;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.ArrayList;
-import java.util.NoSuchElementException;
-import java.util.UUID;
+import dev.osdiscretos.atlantidastore.auth.PasswordHasher;
+import dev.osdiscretos.atlantidastore.dto.CadastroRequestDTO;
+import dev.osdiscretos.atlantidastore.dto.PerfilPublicoUsuarioDTO;
+import dev.osdiscretos.atlantidastore.dto.PerfilUsuarioDTO;
+import dev.osdiscretos.atlantidastore.dto.UsuarioResponse;
+import dev.osdiscretos.atlantidastore.model.Usuario;
+import dev.osdiscretos.atlantidastore.repository.SessaoRepository;
+import dev.osdiscretos.atlantidastore.repository.UsuarioRepository;
 
 @Service
 public class UsuarioService {
@@ -72,7 +72,7 @@ public class UsuarioService {
 
         String senhaHash = passwordHasher.hash(senha);
 
-        Usuario user = new Usuario(
+        Usuario user = Usuario.cadastrar(
             nome,
             email,
             senhaHash

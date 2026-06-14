@@ -1,5 +1,12 @@
 package dev.osdiscretos.atlantidastore.service;
 
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.UUID;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import dev.osdiscretos.atlantidastore.dto.JogoResumoDTO;
 import dev.osdiscretos.atlantidastore.model.BibliotecaItem;
 import dev.osdiscretos.atlantidastore.model.Jogo;
@@ -7,12 +14,6 @@ import dev.osdiscretos.atlantidastore.model.Usuario;
 import dev.osdiscretos.atlantidastore.repository.BibliotecaRepository;
 import dev.osdiscretos.atlantidastore.repository.JogoRepository;
 import dev.osdiscretos.atlantidastore.repository.UsuarioRepository;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.UUID;
 
 @Service
 public class BibliotecaService {
@@ -56,7 +57,7 @@ public class BibliotecaService {
             throw new IllegalArgumentException("Jogo já está na biblioteca");
         }
 
-        bibliotecaRepository.save(new BibliotecaItem(usuario, jogo));
+        bibliotecaRepository.save(BibliotecaItem.criar(usuario, jogo));
     }
 
     @Transactional

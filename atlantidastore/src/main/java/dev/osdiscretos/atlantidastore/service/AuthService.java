@@ -1,17 +1,16 @@
 package dev.osdiscretos.atlantidastore.service;
 
-import dev.osdiscretos.atlantidastore.auth.PasswordHasher;
-import dev.osdiscretos.atlantidastore.model.Usuario;
-import dev.osdiscretos.atlantidastore.model.Sessao;
-import dev.osdiscretos.atlantidastore.dto.LoginRequest;
-import dev.osdiscretos.atlantidastore.repository.SessaoRepository;
-import dev.osdiscretos.atlantidastore.repository.UsuarioRepository;
+import java.security.SecureRandom;
+import java.util.Base64;
 
 import org.springframework.stereotype.Service;
 
-import java.security.SecureRandom;
-import java.time.LocalDateTime;
-import java.util.Base64;
+import dev.osdiscretos.atlantidastore.auth.PasswordHasher;
+import dev.osdiscretos.atlantidastore.dto.LoginRequest;
+import dev.osdiscretos.atlantidastore.model.Sessao;
+import dev.osdiscretos.atlantidastore.model.Usuario;
+import dev.osdiscretos.atlantidastore.repository.SessaoRepository;
+import dev.osdiscretos.atlantidastore.repository.UsuarioRepository;
 
 @Service
 public class AuthService {
@@ -39,12 +38,10 @@ public class AuthService {
         }
 
         Usuario user = authenticate(request.email(), request.senha());
-        LocalDateTime criadoEm = LocalDateTime.now();
-        Sessao sessao = new Sessao(
+        Sessao sessao = Sessao.criarParaUsuario(
             gerarToken(),
             user.getId(),
-            criadoEm,
-            criadoEm.plusSeconds(SESSION_MAX_AGE_SECONDS)
+            SESSION_MAX_AGE_SECONDS
         );
 
         sessaoRepository.removeExpired();
