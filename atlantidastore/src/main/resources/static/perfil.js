@@ -13,6 +13,7 @@ const jogosPublicados = document.getElementById("jogosPublicados");
 const bibliotecaResumo = document.getElementById("bibliotecaResumo");
 const privacidadeToggle = document.getElementById("privacidadeToggle");
 const logoutButton = document.getElementById("logoutButton");
+const adminNavLink = document.getElementById("adminNavLink");
 
 const MAX_PROFILE_IMAGE_BYTES = 2 * 1024 * 1024;
 const ALLOWED_PROFILE_IMAGE_TYPES = new Set(["image/png", "image/jpeg", "image/gif", "image/webp"]);
@@ -215,6 +216,14 @@ logoutButton.addEventListener("click", async () => {
     window.location.href = "/login";
 });
 
+async function carregarSessao() {
+    const usuario = await fetchJson("/api/auth/me");
+    if (usuario && adminNavLink && usuario.administrador) {
+        adminNavLink.hidden = false;
+    }
+}
+
+carregarSessao().catch((error) => mostrarMensagem(error.message, true));
 carregarPerfil().catch((error) => mostrarMensagem(error.message, true));
 
 function validarFotoPerfil(file) {

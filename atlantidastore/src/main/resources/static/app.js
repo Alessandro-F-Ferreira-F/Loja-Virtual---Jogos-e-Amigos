@@ -17,14 +17,16 @@ let digitosCentavos = "";
 
 function atualizarExibicaoPreco() {
     if (!digitosCentavos) {
-        jogoPrecoInput.value = "";
+        if (jogoPrecoInput) jogoPrecoInput.value = "";
         return;
     }
     const centavos = parseInt(digitosCentavos, 10);
-    jogoPrecoInput.value = new Intl.NumberFormat("pt-BR", {
-        style: "currency",
-        currency: "BRL"
-    }).format(centavos / 100);
+    if (jogoPrecoInput) {
+        jogoPrecoInput.value = new Intl.NumberFormat("pt-BR", {
+            style: "currency",
+            currency: "BRL"
+        }).format(centavos / 100);
+    }
 }
 
 if (jogoPrecoInput) {
@@ -56,8 +58,10 @@ if (jogoPrecoInput) {
 }
 
 function mostrarMensagem(texto, erro = false) {
-    mensagem.textContent = texto;
-    mensagem.classList.toggle("erro", erro);
+    if (mensagem) {
+        mensagem.textContent = texto;
+        mensagem.classList.toggle("erro", erro);
+    }
 }
 
 function formatarData(valor) {
@@ -88,6 +92,8 @@ function escaparHtml(valor) {
 }
 
 function renderizarFeed(jogos, biblioteca, desejos) {
+    if (!feedLista) return;
+
     if (!Array.isArray(jogos)) {
         throw new Error("Resposta inválida ao carregar o feed.");
     }
@@ -154,7 +160,9 @@ async function carregarSessao() {
     const usuario = await fetchJson("/api/auth/me");
 
     if (usuario) {
-        usuarioLogado.textContent = `Logado como ${usuario.nome} (${usuario.email})`;
+        if (usuarioLogado) {
+            usuarioLogado.textContent = `Logado como ${usuario.nome} (${usuario.email})`;
+        }
 
         if (adminNavLink && usuario.administrador) {
             adminNavLink.hidden = false;
@@ -175,11 +183,13 @@ async function carregarFeed() {
 }
 
 function getCategoriasSelected() {
+    if (!jogoCategoriasDropdown) return [];
     return Array.from(jogoCategoriasDropdown.querySelectorAll("input[type=checkbox]:checked"))
         .map((cb) => cb.value);
 }
 
 function atualizarLabelCategorias() {
+    if (!jogoCategoriasValor) return;
     const selecionadas = getCategoriasSelected();
     if (selecionadas.length === 0) {
         jogoCategoriasValor.textContent = "Selecione as categorias";
@@ -191,7 +201,7 @@ function atualizarLabelCategorias() {
 }
 
 function fecharCategorias() {
-    if (jogoCategoriasSelect) {
+    if (jogoCategoriasSelect && jogoCategoriasGatilho) {
         jogoCategoriasSelect.classList.remove("open");
         jogoCategoriasGatilho.setAttribute("aria-expanded", "false");
     }
@@ -235,16 +245,18 @@ async function publicarJogo(event) {
             "Content-Type": "application/json"
         },
         body: JSON.stringify({
-            nome: jogoTituloInput.value,
-            descricao: jogoDescricaoInput.value,
+            nome: jogoTituloInput?.value,
+            descricao: jogoDescricaoInput?.value,
             preco: parseInt(digitosCentavos || "0", 10) / 100,
             tags: categorias.join("|")
         })
     });
 
-    jogoForm.reset();
+    if (jogoForm) jogoForm.reset();
     digitosCentavos = "";
-    jogoCategoriasDropdown.querySelectorAll("input[type=checkbox]").forEach((cb) => { cb.checked = false; });
+    if (jogoCategoriasDropdown) {
+        jogoCategoriasDropdown.querySelectorAll("input[type=checkbox]").forEach((cb) => { cb.checked = false; });
+    }
     atualizarLabelCategorias();
     mostrarMensagem("Jogo publicado com sucesso.");
     await carregarFeed();
@@ -272,32 +284,41 @@ async function adicionarListaDesejos(id) {
     await carregarFeed();
 }
 
-logoutButton.addEventListener("click", async () => {
-    await fetch("/api/auth/logout", {
-        method: "POST"
+if (logoutButton) {
+    logoutButton.addEventListener("click", async () => {
+        await fetch("/api/auth/logout", {
+            method: "POST"
+        });
+
+        window.location.href = "/login";
     });
+}
 
-    window.location.href = "/login";
-});
-
-feedLista.addEventListener("click", async (event) => {
-    if (event.target.matches("button[data-add-game-id]")) {
-        try {
-            await adicionarBiblioteca(event.target.dataset.addGameId);
-        } catch (error) {
-            mostrarMensagem(error.message, true);
+if (feedLista) {
+    feedLista.addEventListener("click", async (event) => {
+        if (event.target.matches("button[data-add-game-id]")) {
+            try {
+                await adicionarBiblioteca(event.target.dataset.addGameId);
+            } catch (error) {
+                mostrarMensagem(error.message, true);
+            }
+        } else if (event.target.matches("button[data-wishlist-game-id]")) {
+            try {
+                await adicionarListaDesejos(event.target.dataset.wishlistGameId);
+            } catch (error) {
+                mostrarMensagem(error.message, true);
+            }
         }
-    } else if (event.target.matches("button[data-wishlist-game-id]")) {
-        try {
-            await adicionarListaDesejos(event.target.dataset.wishlistGameId);
-        } catch (error) {
-            mostrarMensagem(error.message, true);
-        }
-    }
-});
+    });
+}
 
 carregarSessao().catch((error) => mostrarMensagem(error.message, true));
-carregarFeed().catch((error) => {
-    feedLista.innerHTML = '<p class="empty">Não foi possível carregar os jogos.</p>';
-    mostrarMensagem(error.message, true);
-});
+
+if (feedLista) {
+    carregarFeed().catch((error) => {
+        if (feedLista) {
+            feedLista.innerHTML = '<p class="empty">Não foi possível carregar os jogos.</p>';
+        }
+        mostrarMensagem(error.message, true);
+    });
+}

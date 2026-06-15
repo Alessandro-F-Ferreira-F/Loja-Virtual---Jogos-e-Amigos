@@ -5,6 +5,7 @@ const listaNotificacoes = document.getElementById("listaNotificacoes");
 const marcarTodasLidas = document.getElementById("marcarTodasLidas");
 const badgeNav = document.getElementById("badgeNav");
 const logoutButton = document.getElementById("logoutButton");
+const adminNavLink = document.getElementById("adminNavLink");
 
 function mostrarMensagem(texto, erro = false) {
     mensagem.textContent = texto;
@@ -253,6 +254,14 @@ logoutButton.addEventListener("click", async () => {
     window.location.href = "/login";
 });
 
+async function carregarSessao() {
+    const usuario = await fetchJson("/api/auth/me");
+    if (usuario && adminNavLink && usuario.administrador) {
+        adminNavLink.hidden = false;
+    }
+}
+
+carregarSessao().catch((error) => mostrarMensagem(error.message, true));
 carregarTudo().catch((error) => {
     listaNotificacoes.innerHTML = '<p class="empty">Não foi possível carregar as notificações.</p>';
     listaSolicitacoes.innerHTML = '<p class="empty">Não foi possível carregar as solicitações.</p>';
