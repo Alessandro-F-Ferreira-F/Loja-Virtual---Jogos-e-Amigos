@@ -55,7 +55,8 @@ form.addEventListener("submit", async (event) => {
             throw new Error(await extrairMensagemErro(resposta, "Não foi possível entrar."));
         }
 
-        window.location.href = "/";
+        const usuario = await resposta.json();
+        window.location.href = usuario.administrador ? "/admin" : "/";
     } catch (error) {
         mostrarMensagem(error.message, true);
     }

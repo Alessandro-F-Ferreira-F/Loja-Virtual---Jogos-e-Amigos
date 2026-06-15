@@ -54,7 +54,7 @@ public class AuthService {
     }
 
     public Usuario authenticate(String email, String senhaDigitada) {
-        Usuario user = usuarioRepository.findByEmail(email == null ? "" : email.trim());
+        Usuario user = usuarioRepository.findByEmail(email == null ? "" : email.trim().toLowerCase());
 
         if (user == null) {
             throw new IllegalArgumentException("E-mail ou senha inválidos");

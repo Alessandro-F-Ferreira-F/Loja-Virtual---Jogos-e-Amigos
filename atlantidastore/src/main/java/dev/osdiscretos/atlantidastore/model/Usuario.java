@@ -95,6 +95,10 @@ public class Usuario {
         this.administrador = true;
     }
 
+    public void alterarSenhaHash(String senhaHash) {
+        this.senhaHash = senhaHash;
+    }
+
     public void setFotoPerfilUrl(String fotoPerfilUrl) {
         this.fotoPerfilUrl = fotoPerfilUrl;
     }

@@ -45,10 +45,22 @@ public class AdminBootstrapRunner implements ApplicationRunner {
         Usuario existente = usuarioRepository.findByEmail(emailNormalizado);
 
         if (existente != null) {
+            boolean alterado = false;
+
             if (!existente.isAdministrador()) {
                 existente.tornarAdministrador();
+                alterado = true;
+            }
+
+            if (!passwordHasher.matches(senha, existente.getSenhaHash())) {
+                existente.alterarSenhaHash(passwordHasher.hash(senha));
+                alterado = true;
+            }
+
+            if (alterado) {
                 usuarioRepository.save(existente);
             }
+
             return;
         }
 
