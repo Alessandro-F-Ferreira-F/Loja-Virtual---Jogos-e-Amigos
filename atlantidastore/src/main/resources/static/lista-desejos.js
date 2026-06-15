@@ -87,7 +87,7 @@ function renderizarLista(jogos, biblioteca) {
 async function carregarListaDesejos() {
     const [jogos, biblioteca] = await Promise.all([
         fetchJson("/api/lista-desejos"),
-        fetchJson("/api/biblioteca").catch(() => []) // Ignora erro caso a biblioteca falhe
+        fetchJson("/api/biblioteca/me").catch(() => []) // Ignora erro caso a biblioteca falhe
     ]);
 
     if (jogos && biblioteca) {

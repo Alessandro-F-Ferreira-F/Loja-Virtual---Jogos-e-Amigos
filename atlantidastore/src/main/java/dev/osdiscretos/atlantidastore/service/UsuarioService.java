@@ -2,7 +2,11 @@ package dev.osdiscretos.atlantidastore.service;
 
 
 import dev.osdiscretos.atlantidastore.auth.PasswordHasher;
+import dev.osdiscretos.atlantidastore.model.Jogo;
 import dev.osdiscretos.atlantidastore.model.Usuario;
+import dev.osdiscretos.atlantidastore.repository.BibliotecaRepository;
+import dev.osdiscretos.atlantidastore.repository.JogoRepository;
+import dev.osdiscretos.atlantidastore.repository.ListaDesejosRepository;
 import dev.osdiscretos.atlantidastore.repository.SessaoRepository;
 import dev.osdiscretos.atlantidastore.repository.UsuarioRepository;
 import dev.osdiscretos.atlantidastore.dto.CadastroRequestDTO;
@@ -25,19 +29,31 @@ public class UsuarioService {
     private final PasswordHasher passwordHasher;
     private final JogoService jogoService;
     private final BibliotecaService bibliotecaService;
+    private final BibliotecaRepository bibliotecaRepository;
+    private final ListaDesejosRepository listaDesejosRepository;
+    private final JogoRepository jogoRepository;
+    private final ProfileImageStorageService profileImageStorageService;
 
     public UsuarioService(
         UsuarioRepository usuarioRepository,
         SessaoRepository sessaoRepository,
         PasswordHasher passwordHasher,
         JogoService jogoService,
-        BibliotecaService bibliotecaService
+        BibliotecaService bibliotecaService,
+        BibliotecaRepository bibliotecaRepository,
+        ListaDesejosRepository listaDesejosRepository,
+        JogoRepository jogoRepository,
+        ProfileImageStorageService profileImageStorageService
     ) {
         this.usuarioRepository = usuarioRepository;
         this.sessaoRepository = sessaoRepository;
         this.passwordHasher = passwordHasher;
         this.jogoService = jogoService;
         this.bibliotecaService = bibliotecaService;
+        this.bibliotecaRepository = bibliotecaRepository;
+        this.listaDesejosRepository = listaDesejosRepository;
+        this.jogoRepository = jogoRepository;
+        this.profileImageStorageService = profileImageStorageService;
     }
 
 
@@ -95,14 +111,24 @@ public class UsuarioService {
         return convertedList;
     }
 
+    @Transactional
     public void remove(UUID id) {
         Usuario userToDelete = usuarioRepository.findByID(id);
         if (userToDelete == null) {
             throw new NoSuchElementException("Usuario não encontrado ");
         }
 
-        usuarioRepository.removeByID(id);
         sessaoRepository.removeByUsuarioId(id);
+        bibliotecaRepository.deleteByUsuarioId(id);
+        listaDesejosRepository.deleteByUsuario_Id(id);
+
+        for (Jogo jogo : jogoRepository.findByDesenvolvedorIdOrderByDataPublicacaoDesc(id)) {
+            bibliotecaRepository.deleteByJogoId(jogo.getId());
+            listaDesejosRepository.deleteByJogo_Id(jogo.getId());
+            jogoRepository.deleteById(jogo.getId());
+        }
+
+        usuarioRepository.removeByID(id);
     }
 
     @Transactional(readOnly = true)
@@ -132,6 +158,18 @@ public class UsuarioService {
             usuario,
             jogoService.listarJogosPublicadosPorUsuario(usuarioId)
         );
+    }
+
+    @Transactional
+    public UsuarioResponse atualizarFotoPerfil(UUID usuarioId, org.springframework.web.multipart.MultipartFile foto) {
+        Usuario usuario = usuarioRepository.findByID(usuarioId);
+
+        if (usuario == null) {
+            throw new NoSuchElementException("Usuário não encontrado");
+        }
+
+        usuario.setFotoPerfilUrl(profileImageStorageService.salvarFoto(usuarioId, foto));
+        return UsuarioResponse.from(usuarioRepository.save(usuario));
     }
 
     private String normalize(String value) {

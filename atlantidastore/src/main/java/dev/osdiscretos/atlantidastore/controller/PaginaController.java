@@ -49,4 +49,9 @@ public class PaginaController {
     public String notificacoes() {
         return "forward:/notificacoes.html";
     }
+
+    @GetMapping("/admin")
+    public String admin() {
+        return "forward:/admin.html";
+    }
 }

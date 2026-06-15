@@ -12,4 +12,6 @@ public interface ListaDesejosRepository extends JpaRepository<ListaDesejosItem, 
     List<ListaDesejosItem> findByUsuarioIdOrderByDataAdicaoDesc(UUID usuarioId);
     ListaDesejosItem findByUsuarioIdAndJogoId(UUID usuarioId, UUID jogoId);
     boolean existsByUsuarioIdAndJogoId(UUID usuarioId, UUID jogoId);
+    void deleteByUsuario_Id(UUID usuarioId);
+    void deleteByJogo_Id(UUID jogoId);
 }

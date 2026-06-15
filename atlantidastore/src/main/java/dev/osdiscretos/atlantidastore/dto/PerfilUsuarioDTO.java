@@ -12,6 +12,7 @@ public record PerfilUsuarioDTO(
     String email,
     LocalDateTime dataCriacao,
     boolean perfilPrivado,
+    String fotoPerfilUrl,
     List<JogoResumoDTO> jogosPublicados,
     List<JogoResumoDTO> biblioteca
 ) {
@@ -26,6 +27,7 @@ public record PerfilUsuarioDTO(
             usuario.getEmail(),
             usuario.getDataCriacao(),
             usuario.isPerfilPrivado(),
+            usuario.getFotoPerfilUrl(),
             jogosPublicados,
             biblioteca
         );

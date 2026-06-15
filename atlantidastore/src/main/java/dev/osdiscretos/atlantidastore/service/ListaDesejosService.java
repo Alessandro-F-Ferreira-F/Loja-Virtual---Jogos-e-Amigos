@@ -3,6 +3,7 @@ package dev.osdiscretos.atlantidastore.service;
 import dev.osdiscretos.atlantidastore.dto.JogoResumoDTO;
 import dev.osdiscretos.atlantidastore.model.Jogo;
 import dev.osdiscretos.atlantidastore.model.ListaDesejosItem;
+import dev.osdiscretos.atlantidastore.model.StatusJogo;
 import dev.osdiscretos.atlantidastore.model.Usuario;
 import dev.osdiscretos.atlantidastore.repository.JogoRepository;
 import dev.osdiscretos.atlantidastore.repository.ListaDesejosRepository;
@@ -45,6 +46,10 @@ public class ListaDesejosService {
             throw new NoSuchElementException("Jogo não encontrado.");
         }
 
+        if (jogo.getStatus() != StatusJogo.PUBLICADO) {
+            throw new IllegalArgumentException("Apenas jogos publicados podem ser adicionados à lista de desejos.");
+        }
+
         ListaDesejosItem item = new ListaDesejosItem(usuario, jogo);
         listaDesejosRepository.save(item);
     }
@@ -60,6 +65,9 @@ public class ListaDesejosService {
     @Transactional
     public List<JogoResumoDTO> listarJogosDesejados(UUID usuarioId) {
         return listaDesejosRepository.findByUsuarioIdOrderByDataAdicaoDesc(usuarioId).stream()
-                .map(item -> JogoResumoDTO.from(item.getJogo())).toList();
+                .map(ListaDesejosItem::getJogo)
+                .filter(jogo -> jogo.getStatus() == StatusJogo.PUBLICADO)
+                .map(JogoResumoDTO::from)
+                .toList();
     }
 }

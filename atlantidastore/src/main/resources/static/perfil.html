@@ -43,9 +43,19 @@
 
         <section class="profile-layout">
             <aside class="panel profile-card">
-                <div class="avatar" id="avatarUsuario">?</div>
+                <div class="avatar-frame">
+                    <img id="fotoPerfil" class="avatar-photo" alt="Foto de perfil">
+                    <div class="avatar" id="avatarUsuario">?</div>
+                </div>
                 <h2 id="nomeUsuario">Usuário</h2>
                 <p id="emailUsuario">-</p>
+                <form id="fotoPerfilForm" class="profile-photo-form">
+                    <label>
+                        Foto de perfil
+                        <input id="fotoPerfilInput" type="file" accept="image/png,image/jpeg,image/gif,image/webp">
+                    </label>
+                    <button class="small secondary" type="submit">Atualizar foto</button>
+                </form>
                 <dl class="profile-list" id="dadosUsuario"></dl>
                 <label class="toggle-label">
                     <input type="checkbox" id="privacidadeToggle">

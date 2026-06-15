@@ -14,4 +14,6 @@ public interface JpaBibliotecaRepository extends JpaRepository<BibliotecaItem, U
     Optional<BibliotecaItem> findByUsuario_IdAndJogo_Id(UUID usuarioId, UUID jogoId);
     boolean existsByUsuario_IdAndJogo_Id(UUID usuarioId, UUID jogoId);
     void deleteByUsuario_IdAndJogo_Id(UUID usuarioId, UUID jogoId);
+    void deleteByUsuario_Id(UUID usuarioId);
+    void deleteByJogo_Id(UUID jogoId);
 }

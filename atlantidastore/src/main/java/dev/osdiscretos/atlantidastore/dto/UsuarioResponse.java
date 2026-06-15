@@ -8,13 +8,17 @@ public record UsuarioResponse (
     UUID id,
     String nome,
     String email,
-    LocalDateTime dataCriacao
+    LocalDateTime dataCriacao,
+    boolean administrador,
+    String fotoPerfilUrl
 ) { 
     public static UsuarioResponse from(Usuario usuario) {
         return new UsuarioResponse(
             usuario.getId(), 
             usuario.getNome(), 
             usuario.getEmail(), 
-            usuario.getDataCriacao());
+            usuario.getDataCriacao(),
+            usuario.isAdministrador(),
+            usuario.getFotoPerfilUrl());
     }    
 }

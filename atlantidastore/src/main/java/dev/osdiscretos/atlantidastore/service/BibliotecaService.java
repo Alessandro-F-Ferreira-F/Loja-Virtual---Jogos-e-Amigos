@@ -3,6 +3,7 @@ package dev.osdiscretos.atlantidastore.service;
 import dev.osdiscretos.atlantidastore.dto.JogoResumoDTO;
 import dev.osdiscretos.atlantidastore.model.BibliotecaItem;
 import dev.osdiscretos.atlantidastore.model.Jogo;
+import dev.osdiscretos.atlantidastore.model.StatusJogo;
 import dev.osdiscretos.atlantidastore.model.Usuario;
 import dev.osdiscretos.atlantidastore.repository.BibliotecaRepository;
 import dev.osdiscretos.atlantidastore.repository.JogoRepository;
@@ -34,6 +35,7 @@ public class BibliotecaService {
     public List<JogoResumoDTO> listarBiblioteca(UUID usuarioId) {
         return bibliotecaRepository.findByUsuarioId(usuarioId).stream()
             .map(BibliotecaItem::getJogo)
+            .filter(jogo -> jogo.getStatus() == StatusJogo.PUBLICADO)
             .map(JogoResumoDTO::from)
             .toList();
     }
@@ -50,6 +52,10 @@ public class BibliotecaService {
 
         if (jogo == null) {
             throw new NoSuchElementException("Jogo não encontrado");
+        }
+
+        if (jogo.getStatus() != StatusJogo.PUBLICADO) {
+            throw new IllegalArgumentException("Apenas jogos publicados podem ser adicionados à biblioteca");
         }
 
         if (bibliotecaRepository.existsByUsuarioIdAndJogoId(usuarioId, jogoId)) {

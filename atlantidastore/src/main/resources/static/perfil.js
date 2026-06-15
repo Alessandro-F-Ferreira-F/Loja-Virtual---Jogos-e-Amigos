@@ -1,6 +1,9 @@
 const perfilResumo = document.getElementById("perfilResumo");
 const mensagem = document.getElementById("mensagem");
 const avatarUsuario = document.getElementById("avatarUsuario");
+const fotoPerfil = document.getElementById("fotoPerfil");
+const fotoPerfilForm = document.getElementById("fotoPerfilForm");
+const fotoPerfilInput = document.getElementById("fotoPerfilInput");
 const nomeUsuario = document.getElementById("nomeUsuario");
 const emailUsuario = document.getElementById("emailUsuario");
 const totalPublicados = document.getElementById("totalPublicados");
@@ -10,6 +13,9 @@ const jogosPublicados = document.getElementById("jogosPublicados");
 const bibliotecaResumo = document.getElementById("bibliotecaResumo");
 const privacidadeToggle = document.getElementById("privacidadeToggle");
 const logoutButton = document.getElementById("logoutButton");
+
+const MAX_PROFILE_IMAGE_BYTES = 2 * 1024 * 1024;
+const ALLOWED_PROFILE_IMAGE_TYPES = new Set(["image/png", "image/jpeg", "image/gif", "image/webp"]);
 
 function mostrarMensagem(texto, erro = false) {
     mensagem.textContent = texto;
@@ -76,6 +82,22 @@ async function fetchJson(url, options = {}) {
     return resposta.json();
 }
 
+function renderizarFotoPerfil(perfil) {
+    const inicial = (perfil.nome || "?").trim().charAt(0).toUpperCase();
+    avatarUsuario.textContent = inicial || "?";
+
+    if (perfil.fotoPerfilUrl) {
+        fotoPerfil.src = perfil.fotoPerfilUrl;
+        fotoPerfil.hidden = false;
+        avatarUsuario.hidden = true;
+        return;
+    }
+
+    fotoPerfil.removeAttribute("src");
+    fotoPerfil.hidden = true;
+    avatarUsuario.hidden = false;
+}
+
 function renderizarLista(elemento, jogos, vazio) {
     if (!jogos || jogos.length === 0) {
         elemento.innerHTML = `<p class="empty">${vazio}</p>`;
@@ -101,7 +123,7 @@ async function carregarPerfil() {
     }
 
     perfilResumo.textContent = `${perfil.nome} (${perfil.email})`;
-    avatarUsuario.textContent = (perfil.nome || "?").trim().charAt(0).toUpperCase();
+    renderizarFotoPerfil(perfil);
     nomeUsuario.textContent = perfil.nome;
     emailUsuario.textContent = perfil.email;
     totalPublicados.textContent = perfil.jogosPublicados?.length ?? 0;
@@ -137,6 +159,54 @@ privacidadeToggle.addEventListener("change", async () => {
     }
 });
 
+fotoPerfilInput.addEventListener("change", () => {
+    const file = fotoPerfilInput.files[0];
+
+    if (!file) {
+        return;
+    }
+
+    if (!validarFotoPerfil(file)) {
+        fotoPerfilInput.value = "";
+        return;
+    }
+
+    fotoPerfil.src = URL.createObjectURL(file);
+    fotoPerfil.hidden = false;
+    avatarUsuario.hidden = true;
+});
+
+fotoPerfilForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const file = fotoPerfilInput.files[0];
+
+    if (!validarFotoPerfil(file)) {
+        return;
+    }
+
+    const botao = fotoPerfilForm.querySelector('button[type="submit"]');
+    botao.disabled = true;
+
+    try {
+        const formData = new FormData();
+        formData.append("foto", file);
+
+        await fetchJson("/api/usuarios/me/foto", {
+            method: "POST",
+            body: formData
+        });
+
+        fotoPerfilForm.reset();
+        mostrarMensagem("Foto de perfil atualizada.");
+        await carregarPerfil();
+    } catch (error) {
+        mostrarMensagem(error.message, true);
+    } finally {
+        botao.disabled = false;
+    }
+});
+
 logoutButton.addEventListener("click", async () => {
     await fetch("/api/auth/logout", {
         method: "POST"
@@ -146,3 +216,22 @@ logoutButton.addEventListener("click", async () => {
 });
 
 carregarPerfil().catch((error) => mostrarMensagem(error.message, true));
+
+function validarFotoPerfil(file) {
+    if (!file) {
+        mostrarMensagem("Selecione uma foto de perfil.", true);
+        return false;
+    }
+
+    if (!ALLOWED_PROFILE_IMAGE_TYPES.has(file.type)) {
+        mostrarMensagem("A foto deve ser PNG, JPEG, GIF ou WebP.", true);
+        return false;
+    }
+
+    if (file.size > MAX_PROFILE_IMAGE_BYTES) {
+        mostrarMensagem("A foto deve ter no máximo 2 MB.", true);
+        return false;
+    }
+
+    return true;
+}

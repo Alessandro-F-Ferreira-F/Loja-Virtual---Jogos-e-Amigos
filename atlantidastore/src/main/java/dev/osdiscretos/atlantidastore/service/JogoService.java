@@ -98,12 +98,17 @@ public class JogoService {
             throw new NoSuchElementException("Jogo não encontrado");
         }
 
+        if (jogo.getStatus() != StatusJogo.PUBLICADO) {
+            throw new NoSuchElementException("Jogo não encontrado");
+        }
+
         return JogoResponseDTO.from(migrarCapaLegadaSeNecessario(jogo));
     }
 
     @Transactional
     public List<JogoResumoDTO> listarJogosPublicadosPorUsuario(UUID usuarioId) {
         return jogoRepository.findByDesenvolvedorIdOrderByDataPublicacaoDesc(usuarioId).stream()
+            .filter(jogo -> jogo.getStatus() == StatusJogo.PUBLICADO)
             .map(this::migrarCapaLegadaSeNecessario)
             .map(JogoResumoDTO::from)
             .toList();
@@ -115,6 +120,10 @@ public class JogoService {
 
         if (jogo == null) {
             throw new NoSuchElementException("Jogo não encontrado");
+        }
+
+        if (jogo.getStatus() != StatusJogo.PUBLICADO) {
+            throw new NoSuchElementException("Capa do jogo não encontrada");
         }
 
         String imagemCapa = jogo.getImagemCapa();

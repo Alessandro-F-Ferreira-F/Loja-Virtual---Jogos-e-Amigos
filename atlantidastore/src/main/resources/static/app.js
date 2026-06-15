@@ -11,6 +11,7 @@ const jogoCategoriasDropdown = jogoCategoriasSelect?.querySelector(".multi-selec
 const jogoDownloadUrlInput = document.getElementById("jogoDownloadUrl");
 const feedLista = document.getElementById("feedLista");
 const logoutButton = document.getElementById("logoutButton");
+const adminNavLink = document.getElementById("adminNavLink");
 
 let digitosCentavos = "";
 
@@ -154,13 +155,17 @@ async function carregarSessao() {
 
     if (usuario) {
         usuarioLogado.textContent = `Logado como ${usuario.nome} (${usuario.email})`;
+
+        if (adminNavLink && usuario.administrador) {
+            adminNavLink.hidden = false;
+        }
     }
 }
 
 async function carregarFeed() {
     const [jogos, biblioteca, desejos] = await Promise.all([
         fetchJson("/api/jogos/feed"),
-        fetchJson("/api/biblioteca").catch(() => []),
+        fetchJson("/api/biblioteca/me").catch(() => []),
         fetchJson("/api/lista-desejos").catch(() => [])
     ]);
 

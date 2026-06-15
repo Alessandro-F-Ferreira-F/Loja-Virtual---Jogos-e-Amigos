@@ -26,6 +26,12 @@ public class Usuario {
     @Column(nullable = false)
     private boolean perfilPrivado = false;
 
+    @Column(nullable = false)
+    private boolean administrador = false;
+
+    @Column(name = "foto_perfil_url", columnDefinition = "TEXT")
+    private String fotoPerfilUrl;
+
     protected Usuario() {
     }
 
@@ -69,6 +75,14 @@ public class Usuario {
         return perfilPrivado;
     }
 
+    public boolean isAdministrador() {
+        return administrador;
+    }
+
+    public String getFotoPerfilUrl() {
+        return fotoPerfilUrl;
+    }
+
     public void tornarPrivado() {
         this.perfilPrivado = true;
     }
@@ -76,5 +90,12 @@ public class Usuario {
     public void tornarPublico() {
         this.perfilPrivado = false;
     }
-}
 
+    public void tornarAdministrador() {
+        this.administrador = true;
+    }
+
+    public void setFotoPerfilUrl(String fotoPerfilUrl) {
+        this.fotoPerfilUrl = fotoPerfilUrl;
+    }
+}

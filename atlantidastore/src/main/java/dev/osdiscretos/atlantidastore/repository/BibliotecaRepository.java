@@ -33,4 +33,12 @@ public class BibliotecaRepository {
     public void deleteByUsuarioIdAndJogoId(UUID usuarioId, UUID jogoId) {
         jpaRepository.deleteByUsuario_IdAndJogo_Id(usuarioId, jogoId);
     }
+
+    public void deleteByUsuarioId(UUID usuarioId) {
+        jpaRepository.deleteByUsuario_Id(usuarioId);
+    }
+
+    public void deleteByJogoId(UUID jogoId) {
+        jpaRepository.deleteByJogo_Id(jogoId);
+    }
 }

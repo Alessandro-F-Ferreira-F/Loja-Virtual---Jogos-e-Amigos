@@ -1,5 +1,7 @@
 const nomeDesenvolvedor = document.getElementById("nomeDesenvolvedor");
 const perfilResumo = document.getElementById("perfilResumo");
+const fotoPerfilPublico = document.getElementById("fotoPerfilPublico");
+const avatarPublico = document.getElementById("avatarPublico");
 const totalPublicados = document.getElementById("totalPublicados");
 const totalSeguidores = document.getElementById("totalSeguidores");
 const totalSeguindo = document.getElementById("totalSeguindo");
@@ -122,6 +124,21 @@ function renderizarBotaoSeguir(status) {
     }
 }
 
+function renderizarFotoPublica(perfil) {
+    avatarPublico.textContent = (perfil.nome || "?").trim().charAt(0).toUpperCase() || "?";
+
+    if (perfil.fotoPerfilUrl) {
+        fotoPerfilPublico.src = perfil.fotoPerfilUrl;
+        fotoPerfilPublico.hidden = false;
+        avatarPublico.hidden = true;
+        return;
+    }
+
+    fotoPerfilPublico.removeAttribute("src");
+    fotoPerfilPublico.hidden = true;
+    avatarPublico.hidden = false;
+}
+
 async function carregarInfoSocial() {
     const [seguidores, seguindo] = await Promise.all([
         fetchJson(`/api/usuarios/${perfilUsuarioId}/seguidores`).catch(() => []),
@@ -149,7 +166,7 @@ async function carregarPerfilPublico() {
 
     const [perfil, biblioteca, desejos, meData] = await Promise.all([
         fetchJson(`/api/usuarios/${perfilUsuarioId}/perfil-publico`),
-        fetchJson("/api/biblioteca").catch(() => []),
+        fetchJson("/api/biblioteca/me").catch(() => []),
         fetchJson("/api/lista-desejos").catch(() => []),
         fetchJson("/api/auth/me").catch(() => null)
     ]);
@@ -161,6 +178,7 @@ async function carregarPerfilPublico() {
     usuarioLogadoId = meData?.id ?? null;
 
     nomeDesenvolvedor.textContent = perfil.nome;
+    renderizarFotoPublica(perfil);
     perfilResumo.textContent = `Publicando na plataforma desde ${formatarData(perfil.dataCriacao)}.`;
     totalPublicados.textContent = perfil.jogosPublicados?.length ?? 0;
 
