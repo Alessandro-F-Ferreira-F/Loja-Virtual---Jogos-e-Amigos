@@ -14,7 +14,7 @@ import java.util.UUID;
 
 @Service
 public class GameImageStorageService {
-    private static final Path GAME_IMAGES_DIR = Path.of("game_images");
+    private static final Path GAME_IMAGES_DIR = Path.of("data", "game-images");
     private static final int TAMANHO_MAXIMO_BYTES = 5 * 1024 * 1024;
     private static final Set<String> TIPOS_PERMITIDOS = Set.of(
         "image/png",
