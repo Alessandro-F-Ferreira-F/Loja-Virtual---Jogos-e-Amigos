@@ -204,6 +204,13 @@ textarea:focus {
     border-color: #2f855a;
 }
 
+.field-hint {
+    margin: 0;
+    color: #66788a;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
 .multi-select {
     position: relative;
     width: 100%;
@@ -484,6 +491,13 @@ button.danger:hover {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
+}
+
+.game-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
 }
 
 .game-meta span,

@@ -30,7 +30,7 @@ public class Jogo {
     @JoinColumn(name = "publicador_id", nullable = false)
     private Usuario desenvolvedor;
 
-    @Column(name = "data_criacao", nullable = false)
+    @Column(name = "data_criacao")
     private LocalDateTime dataPublicacao;
 
     @Enumerated(EnumType.STRING)
@@ -40,15 +40,17 @@ public class Jogo {
     @Column(name = "imagem_capa", columnDefinition = "TEXT")
     private String imagemCapa;
 
+    @Column(name = "arquivo_storage_key", length = 500)
     private String arquivoStorageKey;
 
+    @Column(name = "arquivo_nome_original", length = 255)
     private String arquivoNomeOriginal;
 
+    @Column(name = "arquivo_content_type", length = 100)
     private String arquivoContentType;
 
-    private String arquivoTamanhoBytes;
-
-    
+    @Column(name = "arquivo_tamanho_bytes")
+    private Long arquivoTamanhoBytes;
 
     protected Jogo() {}
 
@@ -66,8 +68,8 @@ public class Jogo {
         this.preco = preco;
         this.tags = tags;
         this.desenvolvedor = desenvolvedor;
-        this.dataPublicacao = LocalDateTime.now();
-        this.status = StatusJogo.PUBLICADO;
+        this.dataPublicacao = null;
+        this.status = StatusJogo.RASCUNHO;
         this.imagemCapa = imagemCapa;
         this.arquivoStorageKey = null;
         this.arquivoNomeOriginal = null;
@@ -127,7 +129,7 @@ public class Jogo {
         return arquivoContentType;
     }
 
-    public String getArquivoTamanhoBytes() {
+    public Long getArquivoTamanhoBytes() {
         return arquivoTamanhoBytes;
     }
 
@@ -135,7 +137,7 @@ public class Jogo {
         this.arquivoStorageKey = arquivo.storageKey();
         this.arquivoNomeOriginal = arquivo.nomeOriginal();
         this.arquivoContentType = arquivo.contentType();
-        this.arquivoTamanhoBytes = arquivo.tamanhoBytes().toString();
+        this.arquivoTamanhoBytes = arquivo.tamanhoBytes();
         this.dataPublicacao = LocalDateTime.now();
         this.status = StatusJogo.PUBLICADO;
     }

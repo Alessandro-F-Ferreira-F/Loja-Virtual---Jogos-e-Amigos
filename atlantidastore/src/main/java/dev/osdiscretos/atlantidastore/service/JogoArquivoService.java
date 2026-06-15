@@ -1,6 +1,7 @@
 package dev.osdiscretos.atlantidastore.service;
 
 import java.util.UUID;
+import java.util.NoSuchElementException;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import dev.osdiscretos.atlantidastore.dto.DownloadFile;
@@ -35,7 +36,11 @@ public class JogoArquivoService {
         UUID jogoId,
         MultipartFile arquivo
     ) {
-        Jogo jogo = jogoRepository.findById(jogoId).orElseThrow(() -> new IllegalArgumentException("Jogo não encontrado"));
+        Jogo jogo = buscarJogo(jogoId);
+
+        if (!jogo.getDesenvolvedor().getId().equals(usuarioId)) {
+            throw new AcessoNegadoException("Apenas o desenvolvedor pode enviar o arquivo deste jogo");
+        }
 
         StoredFile arquivoSalvo = null;
 
@@ -49,7 +54,11 @@ public class JogoArquivoService {
             return UploadArquivoResponseDTO.from(jogo);
         } catch (RuntimeException exception) {
             if (arquivoSalvo != null) {
-                storageService.removerArquivo(arquivoSalvo.storageKey());
+                try {
+                    storageService.removerArquivo(arquivoSalvo.storageKey());
+                } catch (RuntimeException ignored) {
+                    // A falha original é mais importante para o chamador.
+                }
             }
 
             throw exception;
@@ -57,12 +66,11 @@ public class JogoArquivoService {
     }
 
     @Transactional(readOnly = true)
-    public DownloadFile prepararDownload(UUID usuarioId,UUID jogoId) {
-        Jogo jogo = jogoRepository.findById(jogoId);
+    public DownloadFile prepararDownload(UUID usuarioId, UUID jogoId) {
+        Jogo jogo = buscarJogo(jogoId);
 
-        boolean possuiNaBiblioteca = bibliotecaRepository.existsByUsuarioIdAndJogoId(usuarioId, jogoId);
-        if (!possuiNaBiblioteca) {
-            throw new AcessoNegadoException("O usuário não possui este jogo");
+        if (!podeBaixar(usuarioId, jogo)) {
+            throw new AcessoNegadoException("O usuário não tem permissão para baixar este jogo");
         }
 
         if (!jogo.possuiArquivo()) {
@@ -75,7 +83,25 @@ public class JogoArquivoService {
             resource,
             jogo.getArquivoNomeOriginal(),
             jogo.getArquivoContentType(),
-            Long.parseLong(jogo.getArquivoTamanhoBytes())
+            jogo.getArquivoTamanhoBytes()
         );
+    }
+
+    private Jogo buscarJogo(UUID jogoId) {
+        Jogo jogo = jogoRepository.findById(jogoId);
+
+        if (jogo == null) {
+            throw new NoSuchElementException("Jogo não encontrado");
+        }
+
+        return jogo;
+    }
+
+    private boolean podeBaixar(UUID usuarioId, Jogo jogo) {
+        if (jogo.getDesenvolvedor().getId().equals(usuarioId)) {
+            return true;
+        }
+
+        return bibliotecaRepository.existsByUsuarioIdAndJogoId(usuarioId, jogo.getId());
     }
 }

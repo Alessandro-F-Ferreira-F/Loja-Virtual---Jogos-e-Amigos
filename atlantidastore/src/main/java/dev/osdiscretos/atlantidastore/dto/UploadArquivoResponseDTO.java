@@ -20,7 +20,7 @@ public record UploadArquivoResponseDTO(
         return new UploadArquivoResponseDTO(
             jogo.getId(),
             jogo.getArquivoNomeOriginal(),
-            Long.parseLong(jogo.getArquivoTamanhoBytes()),
+            jogo.getArquivoTamanhoBytes(),
             jogo.getStatus(),
             jogo.getDataPublicacao(),
             "Arquivo enviado com sucesso!"

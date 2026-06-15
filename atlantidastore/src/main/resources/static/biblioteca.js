@@ -87,7 +87,10 @@ function renderizarBiblioteca(jogos) {
                     <a class="publisher-link" href="/perfil-usuario?id=${jogo.desenvolvedorId}">${escaparHtml(jogo.desenvolvedorNome || "Desenvolvedor")}</a>
                     <span>${formatarData(jogo.dataPublicacao)}</span>
                 </div>
-                <button class="danger" type="button" data-remove-game-id="${jogo.id}">Remover da biblioteca</button>
+                <div class="game-actions">
+                    <a class="button small" href="/api/jogos/${jogo.id}/download">Baixar jogo</a>
+                    <button class="danger" type="button" data-remove-game-id="${jogo.id}">Remover da biblioteca</button>
+                </div>
             </div>
         </article>
     `).join("");

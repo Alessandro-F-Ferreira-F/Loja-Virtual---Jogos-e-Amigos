@@ -5,6 +5,8 @@ const jogoNomeInput = document.getElementById("jogoNome");
 const jogoDescricaoInput = document.getElementById("jogoDescricao");
 const jogoPrecoInput = document.getElementById("jogoPreco");
 const jogoImagemInput = document.getElementById("jogoImagem");
+const jogoArquivoInput = document.getElementById("jogoArquivo");
+const arquivoSelecionado = document.getElementById("arquivoSelecionado");
 const imagemPreview = document.getElementById("imagemPreview");
 const previewPlaceholder = document.getElementById("previewPlaceholder");
 const logoutButton = document.getElementById("logoutButton");
@@ -16,6 +18,7 @@ const jogoTagsDropdown = document.getElementById("jogoTagsDropdown");
 const tagsCheckboxes = jogoTagsDropdown ? jogoTagsDropdown.querySelectorAll('input[type="checkbox"]') : [];
 
 const MAX_IMAGE_BYTES = 2 * 1024 * 1024;
+const MAX_GAME_FILE_BYTES = 500 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = new Set(["image/png", "image/jpeg", "image/gif", "image/webp"]);
 let imagemCapa = null;
 
@@ -55,6 +58,13 @@ async function fetchJson(url, options = {}) {
     }
 
     return resposta.json();
+}
+
+async function fetchUpload(url, formData) {
+    return fetchJson(url, {
+        method: "POST",
+        body: formData
+    });
 }
 
 async function carregarSessao() {
@@ -109,6 +119,23 @@ jogoImagemInput.addEventListener("change", async () => {
     } catch (error) {
         mostrarMensagem(error.message, true);
     }
+});
+
+jogoArquivoInput.addEventListener("change", () => {
+    const file = jogoArquivoInput.files[0];
+
+    if (!file) {
+        arquivoSelecionado.textContent = "Selecione um arquivo ZIP com a build do jogo.";
+        return;
+    }
+
+    if (!validarArquivoJogo(file)) {
+        jogoArquivoInput.value = "";
+        arquivoSelecionado.textContent = "Selecione um arquivo ZIP com a build do jogo.";
+        return;
+    }
+
+    arquivoSelecionado.textContent = `${file.name} (${formatarTamanho(file.size)})`;
 });
 
 if (jogoTagsTrigger) {
@@ -166,8 +193,19 @@ jogoForm.addEventListener("submit", async (event) => {
     // Converte o valor "R$ 15,99" de volta para número decimal "15.99" pro backend entender
     const precoNumerico = Number(jogoPrecoInput.value.replace(/\D/g, "")) / 100;
 
+    const arquivoJogo = jogoArquivoInput.files[0];
+
+    if (!validarArquivoJogo(arquivoJogo)) {
+        return;
+    }
+
+    const botaoSubmit = jogoForm.querySelector('button[type="submit"]');
+    botaoSubmit.disabled = true;
+
     try {
-        await fetchJson("/api/jogos", {
+        mostrarMensagem("Cadastrando metadados do jogo...");
+
+        const jogoCriado = await fetchJson("/api/jogos", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -181,9 +219,23 @@ jogoForm.addEventListener("submit", async (event) => {
             })
         });
 
+        if (!jogoCriado || !jogoCriado.id) {
+            throw new Error("O servidor não retornou o ID do jogo criado.");
+        }
+
+        mostrarMensagem("Enviando arquivo ZIP do jogo...");
+
+        const formData = new FormData();
+        formData.append("arquivo", arquivoJogo);
+
+        await fetchUpload(`/api/jogos/${jogoCriado.id}/arquivo`, formData);
+
+        mostrarMensagem("Jogo publicado com arquivo enviado.");
         window.location.href = "/";
     } catch (error) {
         mostrarMensagem(error.message, true);
+    } finally {
+        botaoSubmit.disabled = false;
     }
 });
 
@@ -196,3 +248,35 @@ logoutButton.addEventListener("click", async () => {
 });
 
 carregarSessao().catch((error) => mostrarMensagem(error.message, true));
+
+function validarArquivoJogo(file) {
+    if (!file) {
+        mostrarMensagem("Anexe um arquivo ZIP do jogo.", true);
+        return false;
+    }
+
+    if (!file.name.toLowerCase().endsWith(".zip")) {
+        mostrarMensagem("O arquivo do jogo deve ser um .zip.", true);
+        return false;
+    }
+
+    if (file.size <= 0) {
+        mostrarMensagem("O arquivo ZIP não pode estar vazio.", true);
+        return false;
+    }
+
+    if (file.size > MAX_GAME_FILE_BYTES) {
+        mostrarMensagem("O arquivo ZIP deve ter no máximo 500 MB.", true);
+        return false;
+    }
+
+    return true;
+}
+
+function formatarTamanho(bytes) {
+    if (bytes < 1024 * 1024) {
+        return `${(bytes / 1024).toFixed(1)} KB`;
+    }
+
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}

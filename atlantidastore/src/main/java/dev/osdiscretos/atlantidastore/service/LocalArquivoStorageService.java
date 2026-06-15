@@ -2,11 +2,13 @@ package dev.osdiscretos.atlantidastore.service;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.UUID;
+import java.util.zip.ZipInputStream;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
@@ -20,13 +22,16 @@ import dev.osdiscretos.atlantidastore.dto.StoredFile;
 public class LocalArquivoStorageService implements ArquivoStorageService {
 
     private final Path raiz;
+    private final long tamanhoMaximoBytes;
 
     public LocalArquivoStorageService(
-        @Value("${app.storage.games-root}") String raiz
+        @Value("${app.storage.games-root:data/game-files}") String raiz,
+        @Value("${app.storage.games-max-size-bytes:524288000}") long tamanhoMaximoBytes
     ) {
         this.raiz = Paths.get(raiz)
             .toAbsolutePath()
             .normalize();
+        this.tamanhoMaximoBytes = tamanhoMaximoBytes;
 
         criarDiretorioRaiz();
     }
@@ -61,11 +66,12 @@ public class LocalArquivoStorageService implements ArquivoStorageService {
 
             String storageKey = raiz
                 .relativize(destino)
-                .toString();
+                .toString()
+                .replace(File.separatorChar, '/');
 
             return new StoredFile(
                 storageKey,
-                arquivo.getOriginalFilename(),
+                nomeOriginalSeguro(arquivo),
                 determinarContentType(arquivo),
                 Files.size(destino)
             );
@@ -80,13 +86,9 @@ public class LocalArquivoStorageService implements ArquivoStorageService {
 
     @Override
     public Resource carregarArquivo(String storageKey) {
-        Path arquivo = raiz
-            .resolve(storageKey)
-            .normalize();
+        Path arquivo = caminhoSeguro(storageKey);
 
-        validarDentroDaRaiz(arquivo);
-
-        if (!Files.exists(arquivo)) {
+        if (!Files.isRegularFile(arquivo)) {
             throw new ArquivoNaoEncontradoException();
         }
 
@@ -95,11 +97,7 @@ public class LocalArquivoStorageService implements ArquivoStorageService {
 
     @Override
     public void removerArquivo(String storageKey) {
-        Path arquivo = raiz
-            .resolve(storageKey)
-            .normalize();
-
-        validarDentroDaRaiz(arquivo);
+        Path arquivo = caminhoSeguro(storageKey);
 
         try {
             Files.deleteIfExists(arquivo);
@@ -113,13 +111,7 @@ public class LocalArquivoStorageService implements ArquivoStorageService {
 
     @Override
     public boolean existeArquivo(String storageKey) {
-        Path arquivo = raiz
-            .resolve(storageKey)
-            .normalize();
-
-        validarDentroDaRaiz(arquivo);
-
-        return Files.isRegularFile(arquivo);
+        return Files.isRegularFile(caminhoSeguro(storageKey));
     }
 
     private void validarArquivo(MultipartFile arquivo) {
@@ -129,7 +121,19 @@ public class LocalArquivoStorageService implements ArquivoStorageService {
             );
         }
 
-        String nome = arquivo.getOriginalFilename();
+        if (arquivo.getSize() <= 0) {
+            throw new IllegalArgumentException(
+                "O arquivo do jogo não pode estar vazio"
+            );
+        }
+
+        if (arquivo.getSize() > tamanhoMaximoBytes) {
+            throw new IllegalArgumentException(
+                "O arquivo do jogo excede o tamanho máximo permitido"
+            );
+        }
+
+        String nome = nomeOriginalSeguro(arquivo);
 
         if (nome == null ||
             !nome.toLowerCase().endsWith(".zip")) {
@@ -137,6 +141,8 @@ public class LocalArquivoStorageService implements ArquivoStorageService {
                 "O arquivo deve estar no formato ZIP"
             );
         }
+
+        validarZipComConteudo(arquivo);
     }
 
     private void validarDentroDaRaiz(Path caminho) {
@@ -144,6 +150,39 @@ public class LocalArquivoStorageService implements ArquivoStorageService {
             throw new IllegalArgumentException(
                 "Caminho de arquivo inválido"
             );
+        }
+    }
+
+    private Path caminhoSeguro(String storageKey) {
+        if (storageKey == null || storageKey.isBlank()) {
+            throw new ArquivoNaoEncontradoException();
+        }
+
+        Path caminho = raiz.resolve(storageKey).normalize();
+        validarDentroDaRaiz(caminho);
+        return caminho;
+    }
+
+    private String nomeOriginalSeguro(MultipartFile arquivo) {
+        String nome = arquivo.getOriginalFilename();
+
+        if (nome == null || nome.isBlank()
+            || nome.contains("..")
+            || nome.contains("/")
+            || nome.contains("\\")) {
+            throw new IllegalArgumentException("Nome de arquivo inválido");
+        }
+
+        return nome;
+    }
+
+    private void validarZipComConteudo(MultipartFile arquivo) {
+        try (ZipInputStream zip = new ZipInputStream(arquivo.getInputStream())) {
+            if (zip.getNextEntry() == null) {
+                throw new IllegalArgumentException("O ZIP do jogo não pode estar vazio");
+            }
+        } catch (IOException exception) {
+            throw new IllegalArgumentException("O arquivo deve ser um ZIP válido", exception);
         }
     }
 
@@ -161,10 +200,6 @@ public class LocalArquivoStorageService implements ArquivoStorageService {
     private String determinarContentType(
         MultipartFile arquivo
     ) {
-        String contentType = arquivo.getContentType();
-
-        return contentType != null
-            ? contentType
-            : "application/zip";
+        return "application/zip";
     }
 }
