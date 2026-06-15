@@ -1,6 +1,7 @@
 const mensagem = document.getElementById("mensagem");
 const bibliotecaLista = document.getElementById("bibliotecaLista");
 const logoutButton = document.getElementById("logoutButton");
+const adminNavLink = document.getElementById("adminNavLink");
 
 function mostrarMensagem(texto, erro = false) {
     mensagem.textContent = texto;
@@ -133,6 +134,14 @@ logoutButton.addEventListener("click", async () => {
     window.location.href = "/login";
 });
 
+async function carregarSessao() {
+    const usuario = await fetchJson("/api/auth/me");
+    if (usuario && adminNavLink && usuario.administrador) {
+        adminNavLink.hidden = false;
+    }
+}
+
+carregarSessao().catch((error) => mostrarMensagem(error.message, true));
 carregarBiblioteca().catch((error) => {
     bibliotecaLista.innerHTML = '<p class="empty">Não foi possível carregar sua biblioteca.</p>';
     mostrarMensagem(error.message, true);

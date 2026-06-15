@@ -2,6 +2,7 @@ const usuarioLogado = document.getElementById("usuarioLogado");
 const mensagem = document.getElementById("mensagem");
 const listaDesejosContainer = document.getElementById("listaDesejos");
 const logoutButton = document.getElementById("logoutButton");
+const adminNavLink = document.getElementById("adminNavLink");
 
 function mostrarMensagem(texto, erro = false) {
     mensagem.textContent = texto;
@@ -51,6 +52,9 @@ async function carregarSessao() {
     const usuario = await fetchJson("/api/auth/me");
     if (usuario) {
         usuarioLogado.textContent = `Logado como ${usuario.nome} (${usuario.email})`;
+        if (adminNavLink && usuario.administrador) {
+            adminNavLink.hidden = false;
+        }
     }
 }
 
