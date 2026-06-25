@@ -11,7 +11,6 @@ const jogoCategoriasDropdown = jogoCategoriasSelect?.querySelector(".multi-selec
 const jogoDownloadUrlInput = document.getElementById("jogoDownloadUrl");
 const feedLista = document.getElementById("feedLista");
 const logoutButton = document.getElementById("logoutButton");
-const adminNavLink = document.getElementById("adminNavLink");
 
 let digitosCentavos = "";
 
@@ -117,7 +116,7 @@ function renderizarFeed(jogos, biblioteca, desejos) {
                 <p>${escaparHtml(jogo.descricao)}</p>
                 <div class="game-meta">
                     <span>${escaparHtml(jogo.tags || "Sem tags")}</span>
-                    <a class="publisher-link" href="/perfil-usuario?id=${jogo.desenvolvedorId}">${escaparHtml(jogo.desenvolvedorNome || "Desenvolvedor")}</a>
+                    <span class="publisher-link">${escaparHtml(jogo.desenvolvedorNome || "Desenvolvedor")}</span>
                     <span>${formatarData(jogo.dataPublicacao)}</span>
                 </div>
                 ${idsBiblioteca.has(jogo.id) ? '<span class="muted">✔ Na biblioteca</span>' : `<button type="button" data-add-game-id="${jogo.id}">Adicionar à biblioteca</button>`}
@@ -164,9 +163,6 @@ async function carregarSessao() {
             usuarioLogado.textContent = `Logado como ${usuario.nome} (${usuario.email})`;
         }
 
-        if (adminNavLink && usuario.administrador) {
-            adminNavLink.hidden = false;
-        }
     }
 }
 

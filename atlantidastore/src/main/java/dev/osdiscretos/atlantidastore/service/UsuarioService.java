@@ -10,8 +10,6 @@ import dev.osdiscretos.atlantidastore.repository.ListaDesejosRepository;
 import dev.osdiscretos.atlantidastore.repository.SessaoRepository;
 import dev.osdiscretos.atlantidastore.repository.UsuarioRepository;
 import dev.osdiscretos.atlantidastore.dto.CadastroRequestDTO;
-import dev.osdiscretos.atlantidastore.dto.PerfilPublicoUsuarioDTO;
-import dev.osdiscretos.atlantidastore.dto.PerfilUsuarioDTO;
 import dev.osdiscretos.atlantidastore.dto.UsuarioResponse;
 
 import org.springframework.stereotype.Service;
@@ -129,35 +127,6 @@ public class UsuarioService {
         }
 
         usuarioRepository.removeByID(id);
-    }
-
-    @Transactional(readOnly = true)
-    public PerfilUsuarioDTO perfil(UUID usuarioId) {
-        Usuario usuario = usuarioRepository.findByID(usuarioId);
-
-        if (usuario == null) {
-            throw new NoSuchElementException("Usuário não encontrado");
-        }
-
-        return PerfilUsuarioDTO.from(
-            usuario,
-            jogoService.listarJogosPublicadosPorUsuario(usuarioId),
-            bibliotecaService.listarBiblioteca(usuarioId)
-        );
-    }
-
-    @Transactional(readOnly = true)
-    public PerfilPublicoUsuarioDTO perfilPublico(UUID usuarioId) {
-        Usuario usuario = usuarioRepository.findByID(usuarioId);
-
-        if (usuario == null) {
-            throw new NoSuchElementException("Usuário não encontrado");
-        }
-
-        return PerfilPublicoUsuarioDTO.from(
-            usuario,
-            jogoService.listarJogosPublicadosPorUsuario(usuarioId)
-        );
     }
 
     @Transactional
