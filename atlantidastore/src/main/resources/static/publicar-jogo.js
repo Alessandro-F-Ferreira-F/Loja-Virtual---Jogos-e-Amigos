@@ -297,16 +297,10 @@ function PublishGamePage() {
 
             <section className="panel">
                 <form className="form publish-form" onSubmit={handleSubmit}>
-                    <div className="span-2">
+                    <div>
                         <label>
                             Nome do Jogo
                             <input type="text" value={nome} onChange={e => setNome(e.target.value)} required />
-                        </label>
-                    </div>
-                    <div className="span-2">
-                        <label>
-                            Descrição
-                            <textarea value={descricao} onChange={e => setDescricao(e.target.value)} rows="5" required></textarea>
                         </label>
                     </div>
                     <div>
@@ -315,11 +309,19 @@ function PublishGamePage() {
                             <input type="text" value={preco} onChange={handlePriceChange} placeholder="R$ 0,00" required />
                         </label>
                     </div>
-                    <div>
+                    <div className="span-2">
                         <label>
-                            Tags
-                            <TagsSelector selectedTags={tags} onChange={setTags} />
+                            Descrição
+                            <textarea value={descricao} onChange={e => setDescricao(e.target.value)} rows="5" required></textarea>
                         </label>
+                    </div>
+                    <div className="span-2">
+                        <div>
+                            <label>
+                                Tags
+                                <TagsSelector selectedTags={tags} onChange={setTags} />
+                            </label>
+                        </div>
                     </div>
                     <div className="span-2">
                         <label>
