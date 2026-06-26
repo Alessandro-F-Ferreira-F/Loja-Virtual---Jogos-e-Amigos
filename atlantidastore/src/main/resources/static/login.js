@@ -79,41 +79,6 @@ async function carregarSessao() {
     }
 }
 
-// Componente Header reutilizável
-function Header() {
-    const [session, setSession] = React.useState(null);
-
-    // Este useEffect agora busca a sessão do jeito certo, após a renderização inicial.
-    React.useEffect(() => {
-        // A sessão já foi carregada por carregarSessao() antes do render.
-        setSession(window.userSession);
-    }, []); // Executa apenas uma vez, após a montagem do componente.
-
-    const handleLogout = async () => {
-        try {
-            await fetchJson("/api/auth/logout", { method: "POST" });
-            window.location.href = "/login.html";
-        } catch (error) {
-            mostrarMensagem(error.message, true);
-        }
-    };
-
-    return (
-        <header className="topbar">
-            <div className="topbar-inner">
-                <a className="brand" href="/">Atlantida Store</a>
-                <nav className="nav">
-                    <a href="/">Feed</a>
-                    <a href="/biblioteca.html">Minha Biblioteca</a>
-                    <a href="/lista-desejos.html">Lista de desejos</a>
-                    <a className="button small" href="/publicar-jogo.html">Publicar Jogo</a>
-                    {session ? <button className="danger small" onClick={handleLogout} type="button">Sair</button> : <a href="/login.html">Login</a>}
-                </nav>
-            </div>
-        </header>
-    );
-}
-
 // Componente GameCard reutilizável
 function GameCard({ jogo, children }) {
     return (
@@ -163,16 +128,18 @@ function LoginPage() {
     const [email, setEmail] = React.useState('');
     const [senha, setSenha] = React.useState('');
     const [isSubmitting, setIsSubmitting] = React.useState(false);
+    const [message, setMessage] = React.useState({ text: '', isError: false });
 
     React.useEffect(() => {
         if (new URLSearchParams(window.location.search).has("cadastroSucesso")) {
-            mostrarMensagem("Cadastro realizado. Faça login para continuar.");
+            setMessage({ text: "Cadastro realizado. Faça login para continuar.", isError: false });
         }
     }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
+        setMessage({ text: '', isError: false }); // Limpa a mensagem anterior
         try {
             const usuario = await fetchJson("/api/auth/login", {
                 method: "POST",
@@ -181,7 +148,7 @@ function LoginPage() {
             });
             window.location.href = usuario.administrador ? "/admin" : "/";
         } catch (error) {
-            mostrarMensagem(error.message, true);
+            setMessage({ text: error.message, isError: true });
         } finally {
             setIsSubmitting(false);
         }
@@ -213,6 +180,10 @@ function LoginPage() {
                     </button>
                 </form>
 
+                {message.text && (
+                    <p className={`mensagem ${message.isError ? 'erro' : ''}`} role="status">{message.text}</p>
+                )}
+
                 <p className="footer-link">
                     Não tem conta? <a href="/cadastro.html">Cadastre-se</a>
                 </p>
@@ -224,7 +195,6 @@ function LoginPage() {
 function App() {
     return (
         <>
-            <Header />
             <LoginPage />
             <div id="toast-container"></div>
         </>

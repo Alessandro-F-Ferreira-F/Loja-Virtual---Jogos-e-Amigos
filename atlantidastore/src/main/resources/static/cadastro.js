@@ -79,41 +79,6 @@ async function carregarSessao() {
     }
 }
 
-// Componente Header reutilizável
-function Header() {
-    const [session, setSession] = React.useState(null);
-
-    // Este useEffect agora busca a sessão do jeito certo, após a renderização inicial.
-    React.useEffect(() => {
-        // A sessão já foi carregada por carregarSessao() antes do render.
-        setSession(window.userSession);
-    }, []); // Executa apenas uma vez, após a montagem do componente.
-
-    const handleLogout = async () => {
-        try {
-            await fetchJson("/api/auth/logout", { method: "POST" });
-            window.location.href = "/login.html";
-        } catch (error) {
-            mostrarMensagem(error.message, true);
-        }
-    };
-
-    return (
-        <header className="topbar">
-            <div className="topbar-inner">
-                <a className="brand" href="/">Atlantida Store</a>
-                <nav className="nav">
-                    <a href="/">Feed</a>
-                    <a href="/biblioteca.html">Minha Biblioteca</a>
-                    <a href="/lista-desejos.html">Lista de desejos</a>
-                    <a className="button small" href="/publicar-jogo.html">Publicar Jogo</a>
-                    {session ? <button className="danger small" onClick={handleLogout} type="button">Sair</button> : <a href="/login.html">Login</a>}
-                </nav>
-            </div>
-        </header>
-    );
-}
-
 // Componente GameCard reutilizável
 function GameCard({ jogo, children }) {
     return (
@@ -224,7 +189,6 @@ function CadastroPage() {
 function App() {
     return (
         <>
-            <Header />
             <CadastroPage />
             <div id="toast-container"></div>
         </>

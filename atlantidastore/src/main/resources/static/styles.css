@@ -385,6 +385,7 @@ button.danger:hover {
     margin-top: 14px;
     color: #236f4e;
     font-weight: 700;
+    text-align: center;
 }
 
 .mensagem.erro {
