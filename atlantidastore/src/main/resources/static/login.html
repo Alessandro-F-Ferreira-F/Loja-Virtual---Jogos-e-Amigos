@@ -5,42 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Login</title>
     <link rel="stylesheet" href="/styles.css">
+
+    <script type="importmap">
+      {
+        "imports": {
+          "react": "https://esm.sh/react@18",
+          "react-dom": "https://esm.sh/react-dom@18",
+          "react/jsx-runtime": "https://esm.sh/react@18/jsx-runtime"
+        }
+      }
+    </script>
 </head>
 <body>
-    <main class="container narrow">
-        <section class="panel">
-            <div class="header">
-                <div>
-                    <h1>Login</h1>
-                    <p>Acesse sua conta para gerenciar os usuários.</p>
-                </div>
-            </div>
+    <div id="app-root"></div>
 
-            <form id="loginForm" class="form single">
-                <label>
-                    E-mail
-                    <input id="email" name="email" type="email" autocomplete="email" required>
-                </label>
+    <!-- Scripts do React e Babel -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-                <label>
-                    Senha
-                    <div class="senha-wrapper">
-                        <input id="senha" name="senha" type="password" autocomplete="current-password" required>
-                        <button type="button" class="toggle-senha" id="toggleSenha" aria-label="Mostrar senha"></button>
-                    </div>
-                </label>
-
-                <button type="submit">Entrar</button>
-            </form>
-
-            <p id="mensagem" class="mensagem" role="status"></p>
-
-            <p class="footer-link">
-                Não tem conta? <a href="/cadastro">Cadastre-se</a>
-            </p>
-        </section>
-    </main>
-
-    <script src="/login.js?v=2"></script>
+    <script type="text/babel" data-type="module" src="/login.js"></script>
 </body>
 </html>

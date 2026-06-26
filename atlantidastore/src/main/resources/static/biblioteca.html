@@ -5,37 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Minha Biblioteca - Atlantida Store</title>
     <link rel="stylesheet" href="/styles.css?v=2">
+
+    <script type="importmap">
+      {
+        "imports": {
+          "react": "https://esm.sh/react@18",
+          "react-dom": "https://esm.sh/react-dom@18",
+          "react/jsx-runtime": "https://esm.sh/react@18/jsx-runtime"
+        }
+      }
+    </script>
 </head>
 <body>
-    <header class="topbar">
-        <div class="topbar-inner">
-            <a class="brand" href="/">Atlantida Store</a>
-            <nav class="nav">
-                <a href="/">Feed</a>
-                <a href="/biblioteca">Minha Biblioteca</a>
-                <a href="/lista-desejos">Lista de desejos</a>
-                <a class="button small" href="/publicar-jogo">Publicar Jogo</a>
-                <button class="danger small" id="logoutButton" type="button">Sair</button>
-            </nav>
-        </div>
-    </header>
+    <div id="app-root"></div>
 
-    <main class="container">
-        <section class="page-title">
-            <div>
-                <h1>Minha Biblioteca</h1>
-                <p>Jogos adicionados à sua conta.</p>
-            </div>
-            <p id="mensagem" class="mensagem" role="status"></p>
-        </section>
+    <!-- Scripts do React e Babel -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-        <section class="panel">
-            <div id="bibliotecaLista" class="game-grid">
-                <p class="empty">Carregando biblioteca...</p>
-            </div>
-        </section>
-    </main>
-
-    <script src="/biblioteca.js?v=3"></script>
+    <script type="text/babel" data-type="module" src="/biblioteca.js"></script>
 </body>
 </html>

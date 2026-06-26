@@ -1,84 +1,65 @@
-const usuarioLogado = document.getElementById("usuarioLogado");
-const mensagem = document.getElementById("mensagem");
-const jogoForm = document.getElementById("jogoForm");
-const jogoTituloInput = document.getElementById("jogoTitulo");
-const jogoDescricaoInput = document.getElementById("jogoDescricao");
-const jogoPrecoInput = document.getElementById("jogoPreco");
-const jogoCategoriasSelect = document.getElementById("jogoCategoriasSelect");
-const jogoCategoriasGatilho = jogoCategoriasSelect?.querySelector(".multi-select-trigger");
-const jogoCategoriasValor = jogoCategoriasSelect?.querySelector(".multi-select-value");
-const jogoCategoriasDropdown = jogoCategoriasSelect?.querySelector(".multi-select-dropdown");
-const jogoDownloadUrlInput = document.getElementById("jogoDownloadUrl");
-const feedLista = document.getElementById("feedLista");
-const logoutButton = document.getElementById("logoutButton");
-
-let digitosCentavos = "";
-
-function atualizarExibicaoPreco() {
-    if (!digitosCentavos) {
-        if (jogoPrecoInput) jogoPrecoInput.value = "";
-        return;
-    }
-    const centavos = parseInt(digitosCentavos, 10);
-    if (jogoPrecoInput) {
-        jogoPrecoInput.value = new Intl.NumberFormat("pt-BR", {
-            style: "currency",
-            currency: "BRL"
-        }).format(centavos / 100);
-    }
-}
-
-if (jogoPrecoInput) {
-    jogoPrecoInput.addEventListener("keydown", (event) => {
-        if (event.ctrlKey || event.metaKey || event.altKey) return;
-        if (/^\d$/.test(event.key)) {
-            event.preventDefault();
-            if (digitosCentavos.length < 10) {
-                digitosCentavos += event.key;
-            }
-            atualizarExibicaoPreco();
-        } else if (event.key === "Backspace") {
-            event.preventDefault();
-            digitosCentavos = digitosCentavos.slice(0, -1);
-            atualizarExibicaoPreco();
-        } else if (event.key !== "Tab" && event.key !== "Enter") {
-            event.preventDefault();
-        }
-    });
-
-    jogoPrecoInput.addEventListener("paste", (event) => {
-        event.preventDefault();
-        const colado = (event.clipboardData || window.clipboardData).getData("text");
-        for (const c of colado.replace(/\D/g, "")) {
-            if (digitosCentavos.length < 10) digitosCentavos += c;
-        }
-        atualizarExibicaoPreco();
-    });
-}
-
 function mostrarMensagem(texto, erro = false) {
-    if (mensagem) {
-        mensagem.textContent = texto;
-        mensagem.classList.toggle("erro", erro);
+    const container = document.getElementById("toast-container");
+    if (!container) return;
+
+    const toast = document.createElement("div");
+    toast.className = `toast ${erro ? 'erro' : ''}`;
+    toast.textContent = texto;
+    container.appendChild(toast);
+
+    setTimeout(() => {
+        toast.classList.add('show');
+    }, 100);
+
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => {
+            if (toast.parentNode === container) {
+                container.removeChild(toast);
+            }
+        }, 500);
+    }, 5000);
+}
+
+async function extrairMensagemErro(resposta, fallback) {
+    const texto = await resposta.text().catch(() => "");
+    if (!texto) return fallback;
+    try {
+        return JSON.parse(texto).mensagem || fallback;
+    } catch {
+        return texto;
     }
+}
+
+async function fetchJson(url, options = {}) {
+    const resposta = await fetch(url, options);
+
+    // Se receber 401 (Não Autorizado) e não estivermos em uma página pública (login/cadastro), redireciona.
+    const isPublicPage = window.location.pathname.endsWith('/login.html') || window.location.pathname.endsWith('/cadastro.html');
+    if (resposta.status === 401 && !isPublicPage) {
+        window.location.href = "/login.html";
+        return null;
+    }
+
+    if (!resposta.ok) {
+        throw new Error(await extrairMensagemErro(resposta, "Não foi possível concluir a operação."));
+    }
+
+    if (resposta.status === 204) {
+        return null;
+    }
+
+    const textoCorpo = await resposta.text();
+    return textoCorpo ? JSON.parse(textoCorpo) : null;
 }
 
 function formatarData(valor) {
-    if (!valor) {
-        return "-";
-    }
-
-    return new Intl.DateTimeFormat("pt-BR", {
-        dateStyle: "short",
-        timeStyle: "short"
-    }).format(new Date(valor));
+    if (!valor) return "-";
+    return new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short" }).format(new Date(valor));
 }
 
 function formatarPreco(valor) {
-    return new Intl.NumberFormat("pt-BR", {
-        style: "currency",
-        currency: "BRL"
-    }).format(Number(valor ?? 0));
+    return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(Number(valor ?? 0));
 }
 
 function escaparHtml(valor) {
@@ -90,231 +71,194 @@ function escaparHtml(valor) {
         .replaceAll("'", "&#039;");
 }
 
-function renderizarFeed(jogos, biblioteca, desejos) {
-    if (!feedLista) return;
-
-    if (!Array.isArray(jogos)) {
-        throw new Error("Resposta inválida ao carregar o feed.");
+async function carregarSessao() {
+    try {
+        window.userSession = await fetchJson("/api/auth/me");
+    } catch (error) {
+        window.userSession = null;
     }
+}
 
-    if (jogos.length === 0) {
-        feedLista.innerHTML = '<p class="empty">Nenhum jogo publicado.</p>';
-        return;
-    }
+// Componente Header reutilizável
+function Header() {
+    const [session, setSession] = React.useState(null);
 
-    const idsBiblioteca = new Set(biblioteca.map((j) => j.id || j.jogoId));
-    const idsDesejos = new Set(desejos.map((j) => j.id || j.jogoId));
+    // Este useEffect agora busca a sessão do jeito certo, após a renderização inicial.
+    React.useEffect(() => {
+        // A sessão já foi carregada por carregarSessao() antes do render.
+        setSession(window.userSession);
+    }, []); // Executa apenas uma vez, após a montagem do componente.
 
-    feedLista.innerHTML = jogos.map((jogo) => `
-        <article class="game-card">
-            ${jogo.imagemCapaUrl ? `<img class="game-cover" src="${escaparHtml(jogo.imagemCapaUrl)}" alt="Capa de ${escaparHtml(jogo.nome)}">` : '<div class="game-cover placeholder">Sem capa</div>'}
-            <div class="game-body">
-                <div class="game-heading">
-                    <h3>${escaparHtml(jogo.nome)}</h3>
-                    <strong>${formatarPreco(jogo.preco)}</strong>
+    const handleLogout = async () => {
+        try {
+            await fetchJson("/api/auth/logout", { method: "POST" });
+            window.location.href = "/login.html";
+        } catch (error) {
+            mostrarMensagem(error.message, true);
+        }
+    };
+
+    return (
+        <header className="topbar">
+            <div className="topbar-inner">
+                <a className="brand" href="/">Atlantida Store</a>
+                <nav className="nav">
+                    <a href="/">Feed</a>
+                    <a href="/biblioteca.html">Minha Biblioteca</a>
+                    <a href="/lista-desejos.html">Lista de desejos</a>
+                    <a className="button small" href="/publicar-jogo.html">Publicar Jogo</a>
+                    {session ? <button className="danger small" onClick={handleLogout} type="button">Sair</button> : <a href="/login.html">Login</a>}
+                </nav>
+            </div>
+        </header>
+    );
+}
+
+// Componente GameCard reutilizável
+function GameCard({ jogo, children }) {
+    return (
+        <article className="game-card">
+            {jogo.imagemCapaUrl ? <img className="game-cover" src={jogo.imagemCapaUrl} alt={`Capa de ${jogo.nome}`} /> : <div className="game-cover placeholder">Sem capa</div>}
+            <div className="game-body">
+                <div className="game-heading">
+                    <h3>{jogo.nome}</h3>
+                    <strong>{formatarPreco(jogo.preco)}</strong>
                 </div>
-                <p>${escaparHtml(jogo.descricao)}</p>
-                <div class="game-meta">
-                    <span>${escaparHtml(jogo.tags || "Sem tags")}</span>
-                    <span class="publisher-link">${escaparHtml(jogo.desenvolvedorNome || "Desenvolvedor")}</span>
-                    <span>${formatarData(jogo.dataPublicacao)}</span>
+                <p>{jogo.descricao}</p>
+                <div className="game-meta">
+                    <span>{jogo.tags || "Sem tags"}</span>
+                    <span className="publisher-link">{jogo.desenvolvedorNome || "Desenvolvedor"}</span>
+                    <span>{formatarData(jogo.dataPublicacao)}</span>
                 </div>
-                ${idsBiblioteca.has(jogo.id) ? '<span class="muted">✔ Na biblioteca</span>' : `<button type="button" data-add-game-id="${jogo.id}">Adicionar à biblioteca</button>`}
-                ${idsDesejos.has(jogo.id) ? '<span class="muted">🤍 Na lista de desejos</span>' : `<button type="button" data-wishlist-game-id="${jogo.id}">Adicionar à lista de desejos</button>`}
+                <div className="game-actions">
+                    {children}
+                </div>
             </div>
         </article>
-    `).join("");
+    );
 }
 
-async function fetchJson(url, options = {}) {
-    const resposta = await fetch(url, options);
+// Componente reutilizável para input de senha com toggle de visibilidade
+function PasswordInput({ value, onChange, required = false, minLength = 0, autoComplete = "off" }) {
+    const [isPasswordVisible, setIsPasswordVisible] = React.useState(false);
 
-    if (resposta.status === 401) {
-        window.location.href = "/login";
-        return null;
-    }
+    const iconOlho = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+    const iconOlhoFechado = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`;
 
-    if (!resposta.ok) {
-        const texto = await resposta.text().catch(() => "");
-        let erro = {};
+    return (
+        <div className="senha-wrapper">
+            <input
+                type={isPasswordVisible ? "text" : "password"}
+                value={value}
+                onChange={onChange}
+                autoComplete={autoComplete}
+                required={required}
+                minLength={minLength}
+            />
+            <button type="button" className="toggle-senha" onClick={() => setIsPasswordVisible(!isPasswordVisible)} aria-label={isPasswordVisible ? "Ocultar senha" : "Mostrar senha"} dangerouslySetInnerHTML={{ __html: isPasswordVisible ? iconOlhoFechado : iconOlho }} />
+        </div>
+    );
+}
+function FeedPage() {
+    const [jogos, setJogos] = React.useState([]);
+    const [biblioteca, setBiblioteca] = React.useState(new Set());
+    const [desejos, setDesejos] = React.useState(new Set());
+    const [status, setStatus] = React.useState('carregando'); // 'carregando', 'carregado', 'erro'
+    const session = window.userSession;
 
+    const carregarDados = async () => {
+        setStatus('carregando');
         try {
-            erro = texto ? JSON.parse(texto) : {};
-        } catch {
-            erro = { mensagem: texto };
+            const [jogosData, bibliotecaData, desejosData] = await Promise.all([
+                fetchJson("/api/jogos/feed"),
+                fetchJson("/api/biblioteca/me").catch(() => []),
+                fetchJson("/api/lista-desejos").catch(() => [])
+            ]);
+            setJogos(jogosData || []);
+            setBiblioteca(new Set((bibliotecaData || []).map(j => j.id || j.jogoId)));
+            setDesejos(new Set((desejosData || []).map(j => j.id || j.jogoId)));
+            setStatus('carregado');
+        } catch (error) {
+            mostrarMensagem(error.message, true);
+            setStatus('erro');
         }
+    };
 
-        throw new Error(erro.mensagem || "Não foi possível concluir a operação.");
-    }
+    React.useEffect(() => {
+        carregarDados();
+    }, []);
 
-    if (resposta.status === 204) {
-        return null;
-    }
-
-    const textoCorpo = await resposta.text();
-    return textoCorpo ? JSON.parse(textoCorpo) : null;
-}
-
-async function carregarSessao() {
-    const usuario = await fetchJson("/api/auth/me");
-
-    if (usuario) {
-        if (usuarioLogado) {
-            usuarioLogado.textContent = `Logado como ${usuario.nome} (${usuario.email})`;
+    const handleAddBiblioteca = async (jogoId) => {
+        try {
+            await fetchJson(`/api/biblioteca/${jogoId}`, { method: "POST" });
+            mostrarMensagem("Jogo adicionado à biblioteca.");
+            setBiblioteca(prev => new Set(prev).add(jogoId));
+        } catch (error) {
+            mostrarMensagem(error.message, true);
         }
+    };
 
-    }
-}
-
-async function carregarFeed() {
-    const [jogos, biblioteca, desejos] = await Promise.all([
-        fetchJson("/api/jogos/feed"),
-        fetchJson("/api/biblioteca/me").catch(() => []),
-        fetchJson("/api/lista-desejos").catch(() => [])
-    ]);
-
-    if (jogos && biblioteca && desejos) {
-        renderizarFeed(jogos, biblioteca, desejos);
-    }
-}
-
-function getCategoriasSelected() {
-    if (!jogoCategoriasDropdown) return [];
-    return Array.from(jogoCategoriasDropdown.querySelectorAll("input[type=checkbox]:checked"))
-        .map((cb) => cb.value);
-}
-
-function atualizarLabelCategorias() {
-    if (!jogoCategoriasValor) return;
-    const selecionadas = getCategoriasSelected();
-    if (selecionadas.length === 0) {
-        jogoCategoriasValor.textContent = "Selecione as categorias";
-        jogoCategoriasValor.classList.remove("has-selection");
-    } else {
-        jogoCategoriasValor.textContent = selecionadas.join(", ");
-        jogoCategoriasValor.classList.add("has-selection");
-    }
-}
-
-function fecharCategorias() {
-    if (jogoCategoriasSelect && jogoCategoriasGatilho) {
-        jogoCategoriasSelect.classList.remove("open");
-        jogoCategoriasGatilho.setAttribute("aria-expanded", "false");
-    }
-}
-
-if (jogoCategoriasGatilho) {
-    jogoCategoriasGatilho.addEventListener("click", (event) => {
-        event.stopPropagation();
-        const aberto = jogoCategoriasSelect.classList.toggle("open");
-        jogoCategoriasGatilho.setAttribute("aria-expanded", String(aberto));
-    });
-}
-
-if (jogoCategoriasDropdown) {
-    jogoCategoriasDropdown.addEventListener("click", (event) => {
-        const opcao = event.target.closest(".multi-select-option");
-        if (!opcao) return;
-        const checkbox = opcao.querySelector("input[type=checkbox]");
-        if (event.target !== checkbox) {
-            checkbox.checked = !checkbox.checked;
+    const handleAddDesejos = async (jogoId) => {
+        try {
+            await fetchJson(`/api/lista-desejos/${jogoId}`, { method: "POST" });
+            mostrarMensagem("Jogo adicionado à lista de desejos.");
+            setDesejos(prev => new Set(prev).add(jogoId));
+        } catch (error) {
+            mostrarMensagem(error.message, true);
         }
-        atualizarLabelCategorias();
-        event.stopPropagation();
-    });
+    };
+
+    return (
+        <main className="container">
+            <section className="page-title">
+                <div>
+                    <h1>Feed de jogos</h1>
+                    {session && <p>Logado como {session.nome} ({session.email})</p>}
+                </div>
+            </section>
+
+            <section className="panel">
+                <div className="header">
+                    <div>
+                        <h2>Publicados recentemente</h2>
+                        <p>Jogos ordenados pela data de publicação.</p>
+                    </div>
+                </div>
+
+                <div className="game-grid">
+                    {status === 'carregando' && <p className="empty">Carregando jogos...</p>}
+                    {status === 'erro' && <p className="empty">Não foi possível carregar os jogos.</p>}
+                    {status === 'carregado' && jogos.length === 0 && <p className="empty">Nenhum jogo publicado.</p>}
+                    {status === 'carregado' && jogos.map(jogo => (
+                        <GameCard key={jogo.id} jogo={jogo}>
+                            {biblioteca.has(jogo.id)
+                                ? <span className="muted">✔ Na biblioteca</span>
+                                : <button type="button" onClick={() => handleAddBiblioteca(jogo.id)}>Adicionar à biblioteca</button>
+                            }
+                            {desejos.has(jogo.id)
+                                ? <span className="muted">🤍 Na lista de desejos</span>
+                                : <button type="button" onClick={() => handleAddDesejos(jogo.id)}>Adicionar à lista de desejos</button>
+                            }
+                        </GameCard>
+                    ))}
+                </div>
+            </section>
+        </main>
+    );
 }
 
-document.addEventListener("click", fecharCategorias);
+function App() {
+    return (
+        <>
+            <Header />
+            <FeedPage />
+            <div id="toast-container"></div>
+        </>
+    );
+}
 
-document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") fecharCategorias();
+const root = ReactDOM.createRoot(document.getElementById("app-root"));
+
+carregarSessao().then(() => {
+    root.render(<App />);
 });
-
-async function publicarJogo(event) {
-    event.preventDefault();
-
-    const categorias = getCategoriasSelected();
-
-    await fetchJson("/api/jogos", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            nome: jogoTituloInput?.value,
-            descricao: jogoDescricaoInput?.value,
-            preco: parseInt(digitosCentavos || "0", 10) / 100,
-            tags: categorias.join("|")
-        })
-    });
-
-    if (jogoForm) jogoForm.reset();
-    digitosCentavos = "";
-    if (jogoCategoriasDropdown) {
-        jogoCategoriasDropdown.querySelectorAll("input[type=checkbox]").forEach((cb) => { cb.checked = false; });
-    }
-    atualizarLabelCategorias();
-    mostrarMensagem("Jogo publicado com sucesso.");
-    await carregarFeed();
-}
-
-if (jogoForm) {
-    jogoForm.addEventListener("submit", publicarJogo);
-}
-
-async function adicionarBiblioteca(id) {
-    await fetchJson(`/api/biblioteca/${id}`, {
-        method: "POST"
-    });
-
-    mostrarMensagem("Jogo adicionado à biblioteca.");
-    await carregarFeed();
-}
-
-async function adicionarListaDesejos(id) {
-    await fetchJson(`/api/lista-desejos/${id}`, {
-        method: "POST"
-    });
-
-    mostrarMensagem("Jogo adicionado à lista de desejos.");
-    await carregarFeed();
-}
-
-if (logoutButton) {
-    logoutButton.addEventListener("click", async () => {
-        await fetch("/api/auth/logout", {
-            method: "POST"
-        });
-
-        window.location.href = "/login";
-    });
-}
-
-if (feedLista) {
-    feedLista.addEventListener("click", async (event) => {
-        if (event.target.matches("button[data-add-game-id]")) {
-            try {
-                await adicionarBiblioteca(event.target.dataset.addGameId);
-            } catch (error) {
-                mostrarMensagem(error.message, true);
-            }
-        } else if (event.target.matches("button[data-wishlist-game-id]")) {
-            try {
-                await adicionarListaDesejos(event.target.dataset.wishlistGameId);
-            } catch (error) {
-                mostrarMensagem(error.message, true);
-            }
-        }
-    });
-}
-
-carregarSessao().catch((error) => mostrarMensagem(error.message, true));
-
-if (feedLista) {
-    carregarFeed().catch((error) => {
-        if (feedLista) {
-            feedLista.innerHTML = '<p class="empty">Não foi possível carregar os jogos.</p>';
-        }
-        mostrarMensagem(error.message, true);
-    });
-}

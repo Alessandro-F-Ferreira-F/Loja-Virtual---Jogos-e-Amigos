@@ -5,47 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Cadastro</title>
     <link rel="stylesheet" href="/styles.css">
+
+    <script type="importmap">
+      {
+        "imports": {
+          "react": "https://esm.sh/react@18",
+          "react-dom": "https://esm.sh/react-dom@18",
+          "react/jsx-runtime": "https://esm.sh/react@18/jsx-runtime"
+        }
+      }
+    </script>
 </head>
 <body>
-    <main class="container narrow">
-        <section class="panel">
-            <div class="header">
-                <div>
-                    <h1>Cadastro</h1>
-                    <p>Crie uma conta para acessar a plataforma.</p>
-                </div>
-            </div>
+    <div id="app-root"></div>
 
-            <form id="cadastroForm" class="form single">
-                <label>
-                    Nome
-                    <input id="nome" name="nome" type="text" autocomplete="name" required>
-                </label>
+    <!-- Scripts do React e Babel -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-                <label>
-                    E-mail
-                    <input id="email" name="email" type="email" autocomplete="email" required>
-                </label>
-
-                <label>
-                    Senha
-                    <div class="senha-wrapper">
-                        <input id="senha" name="senha" type="password" autocomplete="new-password" minlength="6" required>
-                        <button type="button" class="toggle-senha" id="toggleSenha" aria-label="Mostrar senha"></button>
-                    </div>
-                </label>
-
-                <button type="submit">Cadastrar</button>
-            </form>
-
-            <p id="mensagem" class="mensagem" role="status"></p>
-
-            <p class="footer-link">
-                Já tem conta? <a href="/login">Entrar</a>
-            </p>
-        </section>
-    </main>
-
-    <script src="/cadastro.js"></script>
+    <script type="text/babel" data-type="module" src="/cadastro.js"></script>
 </body>
 </html>
