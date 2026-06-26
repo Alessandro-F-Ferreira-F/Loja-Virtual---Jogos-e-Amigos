@@ -70,14 +70,6 @@ public class JogoController {
             .body(jogoCriado);
     }
 
-    @GetMapping("/me/publicados")
-    public ResponseEntity<List<JogoResumoDTO>> listarMeusPublicados(
-        @CookieValue(name = SessionKey.COOKIE_NAME, required = false) String token
-    ) {
-        Usuario usuario = usuarioAutenticado(token);
-        return ResponseEntity.ok(jogoService.listarJogosPublicadosPorUsuario(usuario.getId()));
-    }
-
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErroResponse> tratarRequisicaoInvalida(IllegalArgumentException exception) {
         return ResponseEntity

@@ -30,7 +30,6 @@ public class UsuarioService {
     private final BibliotecaRepository bibliotecaRepository;
     private final ListaDesejosRepository listaDesejosRepository;
     private final JogoRepository jogoRepository;
-    private final ProfileImageStorageService profileImageStorageService;
 
     public UsuarioService(
         UsuarioRepository usuarioRepository,
@@ -40,8 +39,7 @@ public class UsuarioService {
         BibliotecaService bibliotecaService,
         BibliotecaRepository bibliotecaRepository,
         ListaDesejosRepository listaDesejosRepository,
-        JogoRepository jogoRepository,
-        ProfileImageStorageService profileImageStorageService
+        JogoRepository jogoRepository
     ) {
         this.usuarioRepository = usuarioRepository;
         this.sessaoRepository = sessaoRepository;
@@ -51,7 +49,6 @@ public class UsuarioService {
         this.bibliotecaRepository = bibliotecaRepository;
         this.listaDesejosRepository = listaDesejosRepository;
         this.jogoRepository = jogoRepository;
-        this.profileImageStorageService = profileImageStorageService;
     }
 
 
@@ -127,18 +124,6 @@ public class UsuarioService {
         }
 
         usuarioRepository.removeByID(id);
-    }
-
-    @Transactional
-    public UsuarioResponse atualizarFotoPerfil(UUID usuarioId, org.springframework.web.multipart.MultipartFile foto) {
-        Usuario usuario = usuarioRepository.findByID(usuarioId);
-
-        if (usuario == null) {
-            throw new NoSuchElementException("Usuário não encontrado");
-        }
-
-        usuario.setFotoPerfilUrl(profileImageStorageService.salvarFoto(usuarioId, foto));
-        return UsuarioResponse.from(usuarioRepository.save(usuario));
     }
 
     private String normalize(String value) {

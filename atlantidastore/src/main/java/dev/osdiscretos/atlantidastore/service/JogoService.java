@@ -106,15 +106,6 @@ public class JogoService {
     }
 
     @Transactional
-    public List<JogoResumoDTO> listarJogosPublicadosPorUsuario(UUID usuarioId) {
-        return jogoRepository.findByDesenvolvedorIdOrderByDataPublicacaoDesc(usuarioId).stream()
-            .filter(jogo -> jogo.getStatus() == StatusJogo.PUBLICADO)
-            .map(this::migrarCapaLegadaSeNecessario)
-            .map(JogoResumoDTO::from)
-            .toList();
-    }
-
-    @Transactional
     public GameImageStorageService.CapaJogo buscarCapa(UUID jogoId) {
         Jogo jogo = jogoRepository.findById(jogoId);
 

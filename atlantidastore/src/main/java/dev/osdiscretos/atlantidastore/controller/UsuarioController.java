@@ -48,15 +48,6 @@ public class UsuarioController {
         return ResponseEntity.ok(usuarioService.listAll());
     }
 
-    @PostMapping(path = "/me/foto", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<UsuarioResponse> atualizarFotoPerfil(
-        @RequestParam("foto") MultipartFile foto,
-        @CookieValue(name = SessionKey.COOKIE_NAME, required = false) String token
-    ) {
-        Usuario usuario = usuarioAutenticado(token);
-        return ResponseEntity.ok(usuarioService.atualizarFotoPerfil(usuario.getId(), foto));
-    }
-
     // Endpoint de remoção de usuário
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> remove(
