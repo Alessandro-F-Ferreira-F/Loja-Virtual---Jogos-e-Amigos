@@ -93,39 +93,6 @@ public class UsuarioService {
         return UsuarioResponse.from(saved);
     }
 
-    public List<UsuarioResponse> listAll() {
-        List<Usuario> users = usuarioRepository.listAll();
-
-        List<UsuarioResponse> convertedList = new ArrayList<>();
-
-        for (Usuario user : users) {
-            UsuarioResponse response = UsuarioResponse.from(user);
-            convertedList.add(response);
-        }
-        
-        return convertedList;
-    }
-
-    @Transactional
-    public void remove(UUID id) {
-        Usuario userToDelete = usuarioRepository.findByID(id);
-        if (userToDelete == null) {
-            throw new NoSuchElementException("Usuario não encontrado ");
-        }
-
-        sessaoRepository.removeByUsuarioId(id);
-        bibliotecaRepository.deleteByUsuarioId(id);
-        listaDesejosRepository.deleteByUsuario_Id(id);
-
-        for (Jogo jogo : jogoRepository.findByDesenvolvedorIdOrderByDataPublicacaoDesc(id)) {
-            bibliotecaRepository.deleteByJogoId(jogo.getId());
-            listaDesejosRepository.deleteByJogo_Id(jogo.getId());
-            jogoRepository.deleteById(jogo.getId());
-        }
-
-        usuarioRepository.removeByID(id);
-    }
-
     private String normalize(String value) {
         return value == null ? "" : value.trim();
     }

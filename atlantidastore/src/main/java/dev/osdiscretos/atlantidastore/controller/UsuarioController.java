@@ -40,24 +40,6 @@ public class UsuarioController {
             .body(usuarioCriado);
     }
 
-    // Endpoint de listagem de usuários
-    @GetMapping
-    public ResponseEntity<List<UsuarioResponse>> listUsers(
-        @CookieValue(name = SessionKey.COOKIE_NAME, required = false) String token
-    ) {
-        return ResponseEntity.ok(usuarioService.listAll());
-    }
-
-    // Endpoint de remoção de usuário
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> remove(
-        @PathVariable UUID id,
-        @CookieValue(name = SessionKey.COOKIE_NAME, required = false) String token
-    ) {
-        usuarioService.remove(id);
-        return ResponseEntity.noContent().build();
-    }
-
     // Exceptions...
 
     @ExceptionHandler(IllegalArgumentException.class)

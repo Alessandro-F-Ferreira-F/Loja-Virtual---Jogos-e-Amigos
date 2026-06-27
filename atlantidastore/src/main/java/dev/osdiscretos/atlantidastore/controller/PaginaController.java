@@ -44,9 +44,4 @@ public class PaginaController {
     public String listaDesejos() {
         return "forward:/lista-desejos.html";
     }
-
-    @GetMapping("/admin")
-    public String admin() {
-        return "forward:/admin.html";
-    }
 }

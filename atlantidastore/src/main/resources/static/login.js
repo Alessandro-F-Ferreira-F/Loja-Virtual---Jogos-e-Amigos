@@ -146,7 +146,7 @@ function LoginPage() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, senha })
             });
-            window.location.href = usuario.administrador ? "/admin" : "/";
+            window.location.href = "/"; // Redireciona todos para a página inicial
         } catch (error) {
             setMessage({ text: error.message, isError: true });
         } finally {
